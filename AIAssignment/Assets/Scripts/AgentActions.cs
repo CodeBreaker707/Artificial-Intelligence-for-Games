@@ -15,7 +15,7 @@ public class AgentActions : MonoBehaviour
 {
     // Agent stats
     public int MaxHitPoints = 100;
-    public const float AttackRange = 1.0f;
+    public const float AttackRange = 10.0f;
     public const int NormalAttackDamage = 10;
     public const float HitProbability = 0.5f;
     public const float PickUpRange = 1.0f;
@@ -43,7 +43,7 @@ public class AgentActions : MonoBehaviour
     public GameObject Enemy;
 
     // Our current health
-    private int _currentHitPoints;
+    public int _currentHitPoints;
     public int CurrentHitPoints
     {
         get { return _currentHitPoints; }

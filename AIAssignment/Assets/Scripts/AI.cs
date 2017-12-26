@@ -43,13 +43,14 @@ abstract class Node
 
 //This declares a delagate which will actually make the decision
 // A delegate is a reference to a function
-public delegate bool Decision(AgentActions _agent);
+public delegate bool Decision(AgentActions _agent, GameObject enemy);
 
 // This is a sublass of node responsible for making desicions
 class DecisionNode : Node
 {
-    // The miner
+    // An agent and the opponent
     AgentActions _agent;
+    GameObject _enemy;
 
     // The left and right child nodes, representing yes and no decisions respectively
     Node _yesChild;
@@ -59,7 +60,7 @@ class DecisionNode : Node
     Decision _decision;
 
     // Initialise the decision node
-    public DecisionNode(Decision decision, AgentActions agent)
+    public DecisionNode(Decision decision, AgentActions agent, GameObject enemy)
     {
         // Decision nodes are never leaf nodes
         _isLeaf = false;
@@ -69,6 +70,8 @@ class DecisionNode : Node
 
         _decision = decision;
         _agent = agent;
+        _enemy = enemy;
+
     }
 
     // Add a 'yes' child node
@@ -86,7 +89,7 @@ class DecisionNode : Node
     // Execute the desicion delegate and return the appropriate child node
     public override Node MakeDecision()
     {
-        if (_decision.Invoke(_agent))
+        if (_decision.Invoke(_agent, _enemy))
         {
             // The decision is yes, return the 'yes' child
             return _yesChild;
@@ -108,17 +111,20 @@ class DecisionNode : Node
 
 class ActionNode : Node
 {
-    // The miner
+    // The agents
     AgentActions _agent;
+    GameObject _enemy;
+
     // The action to take
     IAction _action;
 
-    public ActionNode(IAction action, AgentActions agent)
+    public ActionNode(IAction action, AgentActions agent, GameObject enemy)
     {
         // Action nodes are always leaf nodes
         _isLeaf = true;
         _action = action;
         _agent = agent;
+        _enemy = enemy;
     }
 
     // This is just a place holder to stop the compiler complaing that we haven't implemented the abstract function 
@@ -190,23 +196,54 @@ public class AI : MonoBehaviour
 {
     // This is the script containing the AI agents actions
     // e.g. agentScript.MoveTo(enemy);
+    private DecisionTree _decisionTree;
+    private ActionExecutions _actionExecutor;
+
     private AgentActions agentScript;
+    public GameObject enemy;
 
     public void Awake()
     {
-        
+        agentScript = this.gameObject.GetComponent<AgentActions>();
+
+        Decision sightDecision = new Decision(Decisions.IsAgentInSight);
+        DecisionNode inSightDecision = new DecisionNode(sightDecision, agentScript, enemy);
+
+        Action randomWander = new Action(Actions.RandomWander, true, false, 0.0f, 1);
+        ActionNode randomWanderAction = new ActionNode(randomWander, agentScript, enemy);
+
+        Action moveTo = new Action(Actions.MoveTowardsAgent, true, true, 0.5f, 2);
+        Action attackEnemy = new Action(Actions.AttackOpponent, true, false, 0.5f, 3);
+        ActionSequence MoveAndAttack = new ActionSequence();
+        MoveAndAttack.AddAction(moveTo);
+        MoveAndAttack.AddAction(attackEnemy);
+        ActionNode attackEnemyAction = new ActionNode(MoveAndAttack, agentScript, enemy);
+
+        inSightDecision.AddNoChild(randomWanderAction);
+        inSightDecision.AddYesChild(attackEnemyAction);
+
+        _decisionTree = new DecisionTree(inSightDecision);
+
+        _actionExecutor = new ActionExecutions();
+
+
     }
 
     // Use this for initialization
     void Start ()
     {
-        agentScript = this.gameObject.GetComponent<AgentActions>();
+        
+
     }
 
-	// Update is called once per frame
-	void Update ()
+    // Update is called once per frame
+    void Update ()
     {
         // use this update to execute your AI algorithm
+        IAction action = _decisionTree.Execute();
+
+        _actionExecutor.ScheduleAction(action);
+        _actionExecutor.Execute(agentScript, enemy, Time.deltaTime);
 
     }
 }

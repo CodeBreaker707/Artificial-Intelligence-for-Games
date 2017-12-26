@@ -6,9 +6,8 @@ using UnityEngine;
 // This class stores all the decisions that the AI can make
 class Decisions
 {
-    static GameObject enemy;
 
-    public static bool IsAgentInSight(AgentActions agent)
+    public static bool IsAgentInSight(AgentActions agent, GameObject enemy)
     {
         return agent.IsInAttackRange(enemy);
     }
@@ -18,7 +17,24 @@ class Decisions
 // All actions return true once they have completed, false otherwise
 class Actions
 {
-    
+    public static bool RandomWander(AgentActions agent, GameObject enemy)
+    {
+        agent.RandomWander();
+        return true;
+    }
+
+    public static bool MoveTowardsAgent(AgentActions agent, GameObject enemy)
+    {
+        agent.MoveTo(enemy);
+        return true;
+    }
+
+    public static bool AttackOpponent(AgentActions agent, GameObject enemy)
+    {
+        agent.AttackEnemy(enemy);
+        return true;
+    }
+
 }
 
 // Action interface
@@ -30,12 +46,12 @@ public interface IAction : IComparable
     bool IsComplete { get; }
     int Priority { get; }
     void Reset();
-    void Execute(AgentActions agent, float deltaTime);
+    void Execute(AgentActions agent, GameObject enemy, float deltaTime);
     string ToString();
 }
 
 // Declares the delegate for the action function
-public delegate bool ActionDelegate(AgentActions agent);
+public delegate bool ActionDelegate(AgentActions agent, GameObject enemy);
 
 // Base action, stoers information about the action and executes it with a delegate
 public class Action : IAction
@@ -116,7 +132,7 @@ public class Action : IAction
     }
 
     // Execute this action
-    public void Execute(AgentActions agent, float deltaTime)
+    public void Execute(AgentActions agent, GameObject enemy, float deltaTime)
     {
         // If the action has not finished
         if (!_complete)
@@ -131,7 +147,7 @@ public class Action : IAction
             else
             {
                 // Execute the action and use the action return to set complete
-                _complete = _action.Invoke(agent);
+                _complete = _action.Invoke(agent, enemy);
                 Debug.Log("Executing " + ToString() + ", iscomplete = " + _complete.ToString());
             }
         }
@@ -256,12 +272,12 @@ public class CompoundAction : IAction
     }
 
     // Execute this compound action
-    public void Execute(AgentActions miner, float deltaTime)
+    public void Execute(AgentActions agent, GameObject enemy, float deltaTime)
     {
         // Execute all the actions in the action list
         foreach (IAction action in _actions)
         {
-            action.Execute(miner, deltaTime);
+            action.Execute(agent, enemy, deltaTime);
         }
     }
     public override string ToString()
@@ -373,7 +389,7 @@ public class ActionSequence : IAction
     }
 
     // Execute the action sequence from the first to the last
-    public void Execute(AgentActions agent, float deltaTime)
+    public void Execute(AgentActions agent, GameObject enemy, float deltaTime)
     {
         // If the current action has completed go to the next action
         if (_actions[_currentAction].IsComplete)
@@ -391,7 +407,7 @@ public class ActionSequence : IAction
         if (_currentAction < _actions.Count)
         {
             // Execute the current action
-            _actions[_currentAction].Execute(agent, deltaTime);
+            _actions[_currentAction].Execute(agent, enemy, deltaTime);
         }
     }
 
@@ -483,7 +499,7 @@ public class ActionExecutions : MonoBehaviour
     }
 
     // Execute the current action
-    public void Execute(AgentActions agent, float deltaTime)
+    public void Execute(AgentActions agent, GameObject enemy, float deltaTime)
     {
         // Get the highest priority action
         ActivateHighestPriorityAction();
@@ -510,7 +526,7 @@ public class ActionExecutions : MonoBehaviour
             // If we have an action, execute it
             if (_active != null)
             {
-                _active.Execute(agent, deltaTime);
+                _active.Execute(agent, enemy, deltaTime);
             }
         }
     }

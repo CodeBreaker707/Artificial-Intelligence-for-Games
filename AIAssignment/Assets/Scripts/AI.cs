@@ -206,45 +206,61 @@ public class AI : MonoBehaviour
     {
         agentScript = this.gameObject.GetComponent<AgentActions>();
 
+        Decision OpponentAlive = new Decision(Decisions.IsOpponentAlive);
+        DecisionNode isOpponentAliveDecision = new DecisionNode(OpponentAlive, agentScript, enemy);
+
+        Action randomWander = new Action(Actions.RandomWander, true, false, 0.0f, 1);
+        ActionNode randomWanderAction = new ActionNode(randomWander, agentScript, enemy);
+
         Decision sightDecision = new Decision(Decisions.IsAgentInSight);
         DecisionNode inSightDecision = new DecisionNode(sightDecision, agentScript, enemy);
+
+        isOpponentAliveDecision.AddNoChild(randomWanderAction);
+        isOpponentAliveDecision.AddYesChild(inSightDecision);
 
         Decision pickUpDecision = new Decision(Decisions.IsPowerUpClose);
         DecisionNode isPickUpCloseDecision = new DecisionNode(pickUpDecision, agentScript, enemy);
 
         inSightDecision.AddNoChild(isPickUpCloseDecision);
 
-        Decision PowerUpPickedDecision = new Decision(Decisions.IsPowerUpPicked);
-        DecisionNode isPowerUpPickedDecision = new DecisionNode(PowerUpPickedDecision, agentScript, enemy);
+        //Decision PowerUpPickedDecision = new Decision(Decisions.IsPowerUpPicked);
+        //DecisionNode isPowerUpPickedDecision = new DecisionNode(PowerUpPickedDecision, agentScript, enemy);
 
-        Action moveToPPU = new Action(Actions.MoveTowardsPickup, true, false, 0.5f, 1);
-        ActionNode moveToPPUAction = new ActionNode(moveToPPU, agentScript, enemy);
-
-        Action randomWander = new Action(Actions.RandomWander, true, false, 0.0f, 1);
-        ActionNode randomWanderAction = new ActionNode(randomWander, agentScript, enemy);
+        Action moveToPPU = new Action(Actions.MoveTowardsPickup, true, false, 0.0f, 1);
+        ActionNode moveToPPUAction = new ActionNode(moveToPPU, agentScript, enemy);       
 
         isPickUpCloseDecision.AddNoChild(randomWanderAction);
-        isPickUpCloseDecision.AddYesChild(isPowerUpPickedDecision);
+        isPickUpCloseDecision.AddYesChild(moveToPPUAction);
+        //isPickUpCloseDecision.AddYesChild(isPowerUpPickedDecision);
 
-        isPowerUpPickedDecision.AddNoChild(moveToPPUAction);
-        isPowerUpPickedDecision.AddYesChild(randomWanderAction);
+        //isPowerUpPickedDecision.AddNoChild(moveToPPUAction);
+        //isPowerUpPickedDecision.AddYesChild(randomWanderAction);
 
         Decision attackHigher = new Decision(Decisions.IsAttackPowerHigher);
         DecisionNode attackHigherDecision = new DecisionNode(attackHigher, agentScript, enemy);
 
         inSightDecision.AddYesChild(attackHigherDecision);
 
-        Action moveTo = new Action(Actions.MoveTowardsAgent, true, true, 0.5f, 2);
-        Action attackEnemy = new Action(Actions.AttackOpponent, true, false, 0.5f, 3);
+        Decision HealthHigh = new Decision(Decisions.IsHealthHigherThan25Percent);
+        DecisionNode HealthHighDecision = new DecisionNode(HealthHigh, agentScript, enemy);
+
+        Action FleeBattle = new Action(Actions.FleeFromBattle, true, false, 0.0f, 5);
+        ActionNode FleeBattleAction = new ActionNode(FleeBattle, agentScript, enemy);
+
+        attackHigherDecision.AddNoChild(FleeBattleAction);
+        attackHigherDecision.AddYesChild(HealthHighDecision);
+
+        Action moveTo = new Action(Actions.MoveTowardsAgent, true, true, 0.0f, 2);
+        Action attackEnemy = new Action(Actions.AttackOpponent, true, false, 0.2f, 3);
         ActionSequence MoveAndAttack = new ActionSequence();
         MoveAndAttack.AddAction(moveTo);
         MoveAndAttack.AddAction(attackEnemy);
         ActionNode attackEnemyAction = new ActionNode(MoveAndAttack, agentScript, enemy);
 
+        HealthHighDecision.AddNoChild(FleeBattleAction);
+        HealthHighDecision.AddYesChild(attackEnemyAction);
 
-        attackHigherDecision.AddYesChild(attackEnemyAction);
-
-        _decisionTree = new DecisionTree(inSightDecision);
+        _decisionTree = new DecisionTree(isOpponentAliveDecision);
 
         _actionExecutor = new ActionExecutions();
 
@@ -261,10 +277,14 @@ public class AI : MonoBehaviour
     void Update ()
     {
         // use this update to execute your AI algorithm
-        IAction action = _decisionTree.Execute();
+        if (agentScript.Alive)
+        {
+            IAction action = _decisionTree.Execute();
 
-        _actionExecutor.ScheduleAction(action);
-        _actionExecutor.Execute(agentScript, enemy, Time.deltaTime);
+            _actionExecutor.ScheduleAction(action);
+            _actionExecutor.Execute(agentScript, enemy, Time.deltaTime);
+        }
+
 
     }
 }

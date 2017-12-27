@@ -24,7 +24,7 @@ public class PowerUpUse : MonoBehaviour
         if (other.gameObject.CompareTag(Constants.EnemyTag))
         {
             other.gameObject.GetComponent<AgentActions>().UsePowerUp(PowerUpMultiplier);
-            //Destroy(gameObject);
+            Destroy(gameObject);
         }
     }
 }

@@ -14,7 +14,7 @@ public static class Constants
 public class AgentActions : MonoBehaviour
 {
     // Agent stats
-    public int MaxHitPoints = 100;
+    public int maxHitPoints = 100;
     public const float AttackRange = 4.0f;
     public const int NormalAttackDamage = 10;
     public const float HitProbability = 0.5f;
@@ -53,6 +53,11 @@ public class AgentActions : MonoBehaviour
     public int CurrentHitPoints
     {
         get { return _currentHitPoints; }
+    }
+
+    public int MaxHitPoints
+    {
+        get { return maxHitPoints; }
     }
 
     // Our navigation agent
@@ -150,19 +155,17 @@ public class AgentActions : MonoBehaviour
 
     public bool IsInPickUpRange()
     {
-        //if(powerPickUp != null)
-        //{
-        if (Vector3.Distance(transform.position, powerPickUp.transform.position) < PickUpRange)
+        if(powerPickUp != null)
         {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-       // }
-       
-       
+            if (Vector3.Distance(transform.position, powerPickUp.transform.position) < PickUpRange)
+            {
+                return true;
+            }
+    
+       }
+
+        return false;
+
     }
 
     // Attack the enemy
@@ -188,7 +191,7 @@ public class AgentActions : MonoBehaviour
     // We've been hit
     public void TakeDamage(int damage)
     {
-        if(_currentHitPoints + damage > 0)
+        if (_currentHitPoints + damage > 0)
         {
             _currentHitPoints -= damage;
         }

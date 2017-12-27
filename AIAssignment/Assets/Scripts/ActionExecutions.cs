@@ -7,6 +7,11 @@ using UnityEngine;
 class Decisions
 {
 
+    public static bool IsOpponentAlive(AgentActions agent, GameObject enemy)
+    {
+        return enemy.GetComponent<AgentActions>().Alive;
+    }
+
     public static bool IsAgentInSight(AgentActions agent, GameObject enemy)
     {
         return agent.IsInAttackRange(enemy);
@@ -24,7 +29,7 @@ class Decisions
 
     public static bool IsAttackPowerHigher(AgentActions agent, GameObject enemy)
     {
-        if(agent.PowerUp >= enemy.GetComponent<AgentActions>().PowerUp)
+        if (agent.PowerUp >= enemy.GetComponent<AgentActions>().PowerUp)
         {
             return true;
         }
@@ -35,12 +40,28 @@ class Decisions
 
     }
 
+    public static bool IsHealthHigherThan25Percent(AgentActions agent, GameObject enemy)
+    {
+        if(agent.CurrentHitPoints > 0.25 * agent.MaxHitPoints)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+
+
 }
 
 // Here are all the actions we can take
 // All actions return true once they have completed, false otherwise
 class Actions
 {
+
+
     public static bool MoveTowardsPickup(AgentActions agent, GameObject enemy)
     {
         agent.MoveToPickup();
@@ -62,6 +83,12 @@ class Actions
     public static bool AttackOpponent(AgentActions agent, GameObject enemy)
     {
         agent.AttackEnemy(enemy);
+        return true;
+    }
+
+    public static bool FleeFromBattle(AgentActions agent, GameObject enemy)
+    {
+        agent.Flee(enemy);
         return true;
     }
 

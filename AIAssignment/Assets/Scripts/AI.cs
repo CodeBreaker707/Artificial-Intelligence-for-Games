@@ -209,8 +209,30 @@ public class AI : MonoBehaviour
         Decision sightDecision = new Decision(Decisions.IsAgentInSight);
         DecisionNode inSightDecision = new DecisionNode(sightDecision, agentScript, enemy);
 
+        Decision pickUpDecision = new Decision(Decisions.IsPowerUpClose);
+        DecisionNode isPickUpCloseDecision = new DecisionNode(pickUpDecision, agentScript, enemy);
+
+        inSightDecision.AddNoChild(isPickUpCloseDecision);
+
+        Decision PowerUpPickedDecision = new Decision(Decisions.IsPowerUpPicked);
+        DecisionNode isPowerUpPickedDecision = new DecisionNode(PowerUpPickedDecision, agentScript, enemy);
+
+        Action moveToPPU = new Action(Actions.MoveTowardsPickup, true, false, 0.5f, 1);
+        ActionNode moveToPPUAction = new ActionNode(moveToPPU, agentScript, enemy);
+
         Action randomWander = new Action(Actions.RandomWander, true, false, 0.0f, 1);
         ActionNode randomWanderAction = new ActionNode(randomWander, agentScript, enemy);
+
+        isPickUpCloseDecision.AddNoChild(randomWanderAction);
+        isPickUpCloseDecision.AddYesChild(isPowerUpPickedDecision);
+
+        isPowerUpPickedDecision.AddNoChild(moveToPPUAction);
+        isPowerUpPickedDecision.AddYesChild(randomWanderAction);
+
+        Decision attackHigher = new Decision(Decisions.IsAttackPowerHigher);
+        DecisionNode attackHigherDecision = new DecisionNode(attackHigher, agentScript, enemy);
+
+        inSightDecision.AddYesChild(attackHigherDecision);
 
         Action moveTo = new Action(Actions.MoveTowardsAgent, true, true, 0.5f, 2);
         Action attackEnemy = new Action(Actions.AttackOpponent, true, false, 0.5f, 3);
@@ -219,13 +241,12 @@ public class AI : MonoBehaviour
         MoveAndAttack.AddAction(attackEnemy);
         ActionNode attackEnemyAction = new ActionNode(MoveAndAttack, agentScript, enemy);
 
-        inSightDecision.AddNoChild(randomWanderAction);
-        inSightDecision.AddYesChild(attackEnemyAction);
+
+        attackHigherDecision.AddYesChild(attackEnemyAction);
 
         _decisionTree = new DecisionTree(inSightDecision);
 
         _actionExecutor = new ActionExecutions();
-
 
     }
 

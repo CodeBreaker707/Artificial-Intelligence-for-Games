@@ -11,12 +11,42 @@ class Decisions
     {
         return agent.IsInAttackRange(enemy);
     }
+
+    public static bool IsPowerUpClose(AgentActions agent, GameObject enemy)
+    {
+        return agent.IsInPickUpRange();
+    }
+
+    public static bool IsPowerUpPicked(AgentActions agent, GameObject enemy)
+    {
+        return agent.HasPowerUp;
+    }
+
+    public static bool IsAttackPowerHigher(AgentActions agent, GameObject enemy)
+    {
+        if(agent.PowerUp >= enemy.GetComponent<AgentActions>().PowerUp)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+
+    }
+
 }
 
 // Here are all the actions we can take
 // All actions return true once they have completed, false otherwise
 class Actions
 {
+    public static bool MoveTowardsPickup(AgentActions agent, GameObject enemy)
+    {
+        agent.MoveToPickup();
+        return true;
+    }
+
     public static bool RandomWander(AgentActions agent, GameObject enemy)
     {
         agent.RandomWander();
@@ -266,7 +296,7 @@ public class CompoundAction : IAction
     // Implement the compare to interface for the priority queue
     public int CompareTo(object toCompare)
     {
-        // Cast fomr object to IAction interface to access priority value
+        // Cast from object to IAction interface to access priority value
         IAction actionToCompare = toCompare as IAction;
         return Priority.CompareTo(actionToCompare.Priority);
     }

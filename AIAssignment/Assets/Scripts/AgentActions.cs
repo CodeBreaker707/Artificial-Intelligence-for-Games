@@ -15,10 +15,10 @@ public class AgentActions : MonoBehaviour
 {
     // Agent stats
     public int MaxHitPoints = 100;
-    public const float AttackRange = 10.0f;
+    public const float AttackRange = 4.0f;
     public const int NormalAttackDamage = 10;
     public const float HitProbability = 0.5f;
-    public const float PickUpRange = 1.0f;
+    public const float PickUpRange = 10.0f;
 
     // How far will the random wander go
     private const int RandomWanderDistance = 200;
@@ -39,8 +39,14 @@ public class AgentActions : MonoBehaviour
         get { return _powerUp > 0; }
     }
 
+    public int PowerUp
+    {
+        get { return _powerUp; }
+    }
+
     public Vector3 StartPosition;
     public GameObject Enemy;
+    public GameObject powerPickUp;
 
     // Our current health
     public int _currentHitPoints;
@@ -98,6 +104,11 @@ public class AgentActions : MonoBehaviour
         _agent.destination = target.transform.position;
     }
 
+    public void MoveToPickup()
+    {
+        _agent.destination = powerPickUp.transform.position;
+    }
+
     // Randomly wander around the level
     public void RandomWander()
     {
@@ -135,6 +146,23 @@ public class AgentActions : MonoBehaviour
             }
         }
         return false;
+    }
+
+    public bool IsInPickUpRange()
+    {
+        //if(powerPickUp != null)
+        //{
+        if (Vector3.Distance(transform.position, powerPickUp.transform.position) < PickUpRange)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+       // }
+       
+       
     }
 
     // Attack the enemy

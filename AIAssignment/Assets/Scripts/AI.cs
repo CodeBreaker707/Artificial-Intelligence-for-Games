@@ -221,7 +221,11 @@ public class AI : MonoBehaviour
         Decision pickUpDecision = new Decision(Decisions.IsPowerUpClose);
         DecisionNode isPickUpCloseDecision = new DecisionNode(pickUpDecision, agentScript, enemy);
 
+        Decision OpponentFleeing = new Decision(Decisions.IsOpponentFleeing);
+        DecisionNode isOpponentFleeingDecision = new DecisionNode(OpponentFleeing, agentScript, enemy);
+
         inSightDecision.AddNoChild(isPickUpCloseDecision);
+        inSightDecision.AddYesChild(isOpponentFleeingDecision);
 
         //Decision PowerUpPickedDecision = new Decision(Decisions.IsPowerUpPicked);
         //DecisionNode isPowerUpPickedDecision = new DecisionNode(PowerUpPickedDecision, agentScript, enemy);
@@ -235,11 +239,13 @@ public class AI : MonoBehaviour
 
         //isPowerUpPickedDecision.AddNoChild(moveToPPUAction);
         //isPowerUpPickedDecision.AddYesChild(randomWanderAction);
+        
 
         Decision attackHigher = new Decision(Decisions.IsAttackPowerHigher);
         DecisionNode attackHigherDecision = new DecisionNode(attackHigher, agentScript, enemy);
 
-        inSightDecision.AddYesChild(attackHigherDecision);
+        isOpponentFleeingDecision.AddNoChild(attackHigherDecision);
+        isOpponentFleeingDecision.AddYesChild(randomWanderAction);
 
         Decision HealthHigh = new Decision(Decisions.IsHealthHigherThan25Percent);
         DecisionNode HealthHighDecision = new DecisionNode(HealthHigh, agentScript, enemy);

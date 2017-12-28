@@ -15,10 +15,10 @@ public class AgentActions : MonoBehaviour
 {
     // Agent stats
     public int maxHitPoints = 100;
-    public const float AttackRange = 4.0f;
+    public const float AttackRange = 2.0f;
     public const int NormalAttackDamage = 10;
     public const float HitProbability = 0.5f;
-    public const float PickUpRange = 10.0f;
+    public const float PickUpRange = 2.0f;
 
     // How far will the random wander go
     private const int RandomWanderDistance = 200;
@@ -30,6 +30,20 @@ public class AgentActions : MonoBehaviour
     {
         get { return _alive; }
         set { _alive = value; }
+    }
+
+    private bool _fleeing = false;
+    public bool Fleeing
+    {
+        get { return _fleeing; }
+        set { _fleeing = value; }
+    }
+
+    private float _fleeTimer = 1.0f;
+    public float FleeTimer
+    {
+        get { return _fleeTimer; }
+        set { _fleeTimer = value; }
     }
 
     // Do we have a powerup
@@ -106,6 +120,11 @@ public class AgentActions : MonoBehaviour
     // Move towards a target object
     public void MoveTo(GameObject target)
     {
+        if(Fleeing == true)
+        {
+            Fleeing = false;
+        }
+
         _agent.destination = target.transform.position;
     }
 
@@ -117,6 +136,11 @@ public class AgentActions : MonoBehaviour
     // Randomly wander around the level
     public void RandomWander()
     {
+        if(Fleeing == true)
+        {
+            Fleeing = false;
+        }
+
         // Change our direction every few ticks
         if (_tickToNextRandomUpdate >= RandomWanderUpdateInterval)
         {
@@ -233,6 +257,10 @@ public class AgentActions : MonoBehaviour
     // Run away, run away
     public void Flee(GameObject enemy)
     {
+
+        Fleeing = true;
+        //FleeTimer -= Time.deltaTime;
+
         // Turn away from the threat
         transform.rotation = Quaternion.LookRotation(transform.position - enemy.transform.position);
         Vector3 runTo = transform.position + transform.forward * _agent.speed;
@@ -244,6 +272,13 @@ public class AgentActions : MonoBehaviour
         // Check for a point to flee to
         UnityEngine.AI.NavMesh.SamplePosition(runTo, out navHit, FleeDistance, 1 << UnityEngine.AI.NavMesh.GetAreaFromName("Walkable"));
         _agent.SetDestination(navHit.position);
+
+        //if(FleeTimer <= 0)
+        //{
+
+        //}
+        
+
     }
 
     // Check if something of interest is in range

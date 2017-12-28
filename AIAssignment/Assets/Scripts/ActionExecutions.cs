@@ -17,6 +17,11 @@ class Decisions
         return agent.IsInAttackRange(enemy);
     }
 
+    public static bool IsOpponentFleeing(AgentActions agent, GameObject enemy)
+    {
+        return enemy.GetComponent<AgentActions>().Fleeing;
+    }
+
     public static bool IsPowerUpClose(AgentActions agent, GameObject enemy)
     {
         return agent.IsInPickUpRange();

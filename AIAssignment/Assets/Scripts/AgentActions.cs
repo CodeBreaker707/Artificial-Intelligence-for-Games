@@ -136,7 +136,8 @@ public class AgentActions : MonoBehaviour
     // Randomly wander around the level
     public void RandomWander()
     {
-        if(Fleeing == true)
+
+        if (Fleeing == true)
         {
             Fleeing = false;
         }

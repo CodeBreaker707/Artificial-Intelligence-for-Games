@@ -22,182 +22,182 @@ using UnityEngine;
 * 
 *****************************************************************************************************************************/
 
-// We use this abstract base class so the tree traversal algorithm only has to worry about nodes
+//We use this abstract base class so the tree traversal algorithm only has to worry about nodes
 // and not whether they are decision or action nodes
-abstract class Node
-{
-    protected bool _isLeaf;
+//abstract class Node
+//{
+//    protected bool _isLeaf;
 
-    // Keep track of whether we're a leaf node or not for the travesal algorithm to
-    // decide whether to recurse or not
-    public bool IsLeaf
-    {
-        get { return _isLeaf; }
-    }
+//    // Keep track of whether we're a leaf node or not for the travesal algorithm to
+//    // decide whether to recurse or not
+//    public bool IsLeaf
+//    {
+//        get { return _isLeaf; }
+//    }
 
-    // Nodes can either make decisions or take actions
-    // These will be implemented in the appropriate subclasses
-    public abstract IAction GetAction();
-    public abstract Node MakeDecision();
-}
+//    // Nodes can either make decisions or take actions
+//    // These will be implemented in the appropriate subclasses
+//    public abstract IAction GetAction();
+//    public abstract Node MakeDecision();
+//}
 
-//This declares a delagate which will actually make the decision
-// A delegate is a reference to a function
-public delegate bool Decision(AgentActions _agent, GameObject enemy);
+////This declares a delagate which will actually make the decision
+//// A delegate is a reference to a function
+//public delegate bool Decision(AgentActions _agent, GameObject enemy);
 
-// This is a sublass of node responsible for making desicions
-class DecisionNode : Node
-{
-    // An agent and the opponent
-    AgentActions _agent;
-    GameObject _enemy;
+//// This is a sublass of node responsible for making desicions
+//class DecisionNode : Node
+//{
+//    // An agent and the opponent
+//    AgentActions _agent;
+//    GameObject _enemy;
 
-    // The left and right child nodes, representing yes and no decisions respectively
-    Node _yesChild;
-    Node _noChild;
+//    // The left and right child nodes, representing yes and no decisions respectively
+//    Node _yesChild;
+//    Node _noChild;
 
-    // The decision to make
-    Decision _decision;
+//    // The decision to make
+//    Decision _decision;
 
-    // Initialise the decision node
-    public DecisionNode(Decision decision, AgentActions agent, GameObject enemy)
-    {
-        // Decision nodes are never leaf nodes
-        _isLeaf = false;
+//    // Initialise the decision node
+//    public DecisionNode(Decision decision, AgentActions agent, GameObject enemy)
+//    {
+//        // Decision nodes are never leaf nodes
+//        _isLeaf = false;
 
-        _yesChild = null;
-        _noChild = null;
+//        _yesChild = null;
+//        _noChild = null;
 
-        _decision = decision;
-        _agent = agent;
-        _enemy = enemy;
+//        _decision = decision;
+//        _agent = agent;
+//        _enemy = enemy;
 
-    }
+//    }
 
-    // Add a 'yes' child node
-    public void AddYesChild(Node child)
-    {
-        _yesChild = child;
-    }
+//    // Add a 'yes' child node
+//    public void AddTrueChild(Node child)
+//    {
+//        _yesChild = child;
+//    }
 
-    // Add a node child node
-    public void AddNoChild(Node child)
-    {
-        _noChild = child;
-    }
+//    // Add a node child node
+//    public void AddFalseChild(Node child)
+//    {
+//        _noChild = child;
+//    }
 
-    // Execute the desicion delegate and return the appropriate child node
-    public override Node MakeDecision()
-    {
-        if (_decision.Invoke(_agent, _enemy))
-        {
-            // The decision is yes, return the 'yes' child
-            return _yesChild;
-        }
-        else
-        {
-            // The desicion is no, return the 'no' node
-            return _noChild;
-        }
-    }
+//    // Execute the desicion delegate and return the appropriate child node
+//    public override Node MakeDecision()
+//    {
+//        if (_decision.Invoke(_agent, _enemy))
+//        {
+//            // The decision is yes, return the 'yes' child
+//            return _yesChild;
+//        }
+//        else
+//        {
+//            // The desicion is no, return the 'no' node
+//            return _noChild;
+//        }
+//    }
 
-    // This is just a place holder to stop the compiler complaing that we haven't implemented the abstract function
-    public override IAction GetAction()
-    {
-        // Do nothing
-        return null;
-    }
-}
+//    // This is just a place holder to stop the compiler complaing that we haven't implemented the abstract function
+//    public override IAction GetAction()
+//    {
+//        // Do nothing
+//        return null;
+//    }
+//}
 
-class ActionNode : Node
-{
-    // The agents
-    AgentActions _agent;
-    GameObject _enemy;
+//class ActionNode : Node
+//{
+//    // The agents
+//    AgentActions _agent;
+//    GameObject _enemy;
 
-    // The action to take
-    IAction _action;
+//    // The action to take
+//    IAction _action;
 
-    public ActionNode(IAction action, AgentActions agent, GameObject enemy)
-    {
-        // Action nodes are always leaf nodes
-        _isLeaf = true;
-        _action = action;
-        _agent = agent;
-        _enemy = enemy;
-    }
+//    public ActionNode(IAction action, AgentActions agent, GameObject enemy)
+//    {
+//        // Action nodes are always leaf nodes
+//        _isLeaf = true;
+//        _action = action;
+//        _agent = agent;
+//        _enemy = enemy;
+//    }
 
-    // This is just a place holder to stop the compiler complaing that we haven't implemented the abstract function 
-    public override Node MakeDecision()
-    {
-        // Do nothing, returning null ensures no meaningful decision is attempted
-        return null;
-    }
+//    // This is just a place holder to stop the compiler complaing that we haven't implemented the abstract function 
+//    public override Node MakeDecision()
+//    {
+//        // Do nothing, returning null ensures no meaningful decision is attempted
+//        return null;
+//    }
 
-    // This function will return its stored action
-    public override IAction GetAction()
-    {
-        return _action;
-    }
-}
+//    // This function will return its stored action
+//    public override IAction GetAction()
+//    {
+//        return _action;
+//    }
+//}
 
-// This is the decision tree itself, it stores the root node and the
-// node currently being visited during traversal
-class DecisionTree
-{
-    // The root node of the tree
-    Node _root;
-    // The node we are currently visiting
-    Node _currentNode;
+//// This is the decision tree itself, it stores the root node and the
+//// node currently being visited during traversal
+//class DecisionTree
+//{
+//    // The root node of the tree
+//    Node _root;
+//    // The node we are currently visiting
+//    Node _currentNode;
 
-    IAction _selectedAction = null;
+//    IAction _selectedAction = null;
 
-    // Initialise the tree
-    public DecisionTree(Node root)
-    {
-        _root = root;
+//    // Initialise the tree
+//    public DecisionTree(Node root)
+//    {
+//        _root = root;
 
-        // Start at the root
-        _currentNode = _root;
-    }
+//        // Start at the root
+//        _currentNode = _root;
+//    }
 
-    // Start running the traversal
-    public IAction Execute()
-    {
-        // Start traversal at the root
-        Traverse(_root);
-        return _selectedAction;
-    }
+//    // Start running the traversal
+//    public IAction Execute()
+//    {
+//        // Start traversal at the root
+//        Traverse(_root);
+//        return _selectedAction;
+//    }
 
-    // Recursively traverse the tree untill we reach a leaf node
-    private void Traverse(Node currentNode)
-    {
-        // Have we arrived at a leaf node?
-        if (currentNode.IsLeaf)
-        {
-            //_currentActionName = currentNode.GetDelegateName();
-            // Exceute the appropriate action
-            _selectedAction = currentNode.GetAction();
-        }
-        // Otherwise continue down the tree
-        else
-        {
-            // Decide whether to go down the 'yes' branch or the 'no' branch
-            // _currentNode is set to the appropriate child node depending on the decision
-            _currentNode = currentNode.MakeDecision();
+//    // Recursively traverse the tree untill we reach a leaf node
+//    private void Traverse(Node currentNode)
+//    {
+//        // Have we arrived at a leaf node?
+//        if (currentNode.IsLeaf)
+//        {
+//            //_currentActionName = currentNode.GetDelegateName();
+//            // Exceute the appropriate action
+//            _selectedAction = currentNode.GetAction();
+//        }
+//        // Otherwise continue down the tree
+//        else
+//        {
+//            // Decide whether to go down the 'yes' branch or the 'no' branch
+//            // _currentNode is set to the appropriate child node depending on the decision
+//            _currentNode = currentNode.MakeDecision();
 
-            // Recurse on the child node
-            Traverse(_currentNode);
-        }
-    }
-}
+//            // Recurse on the child node
+//            Traverse(_currentNode);
+//        }
+//    }
+//}
 
 public class AI : MonoBehaviour
 {
-    // This is the script containing the AI agents actions
-    // e.g. agentScript.MoveTo(enemy);
-    private DecisionTree _decisionTree;
-    private ActionExecutions _actionExecutor;
+    //This is the script containing the AI agents actions
+    //e.g.agentScript.MoveTo(enemy);
+    private DTAlgorithm decision_tree;
+    private ActionExecutor action_executor;
 
     private AgentActions agentScript;
     public GameObject enemy;
@@ -206,89 +206,92 @@ public class AI : MonoBehaviour
     {
         agentScript = this.gameObject.GetComponent<AgentActions>();
 
-        Decision OpponentAlive = new Decision(Decisions.IsOpponentAlive);
-        DecisionNode isOpponentAliveDecision = new DecisionNode(OpponentAlive, agentScript, enemy);
 
-        Action randomWander = new Action(Actions.RandomWander, true, false, 0.0f, 1);
-        ActionNode randomWanderAction = new ActionNode(randomWander, agentScript, enemy);
+        Decision OpponentAlive = new Decision(Decisions.IsOpponentAlive);
+        DecisionNode isOpponentAliveDecision = new DecisionNode(OpponentAlive);
+
+        Action randomWander = new Action(Actions.RandomWander);
+        ActionNode randomWanderAction = new ActionNode(randomWander);
 
         Decision sightDecision = new Decision(Decisions.IsAgentInSight);
-        DecisionNode inSightDecision = new DecisionNode(sightDecision, agentScript, enemy);
+        DecisionNode inSightDecision = new DecisionNode(sightDecision);
 
-        isOpponentAliveDecision.AddNoChild(randomWanderAction);
-        isOpponentAliveDecision.AddYesChild(inSightDecision);
+        isOpponentAliveDecision.AddFalseChild(randomWanderAction);
+        isOpponentAliveDecision.AddTrueChild(inSightDecision);
 
         Decision pickUpDecision = new Decision(Decisions.IsPowerUpClose);
-        DecisionNode isPickUpCloseDecision = new DecisionNode(pickUpDecision, agentScript, enemy);
+        DecisionNode isPickUpCloseDecision = new DecisionNode(pickUpDecision);
 
         Decision OpponentFleeing = new Decision(Decisions.IsOpponentFleeing);
-        DecisionNode isOpponentFleeingDecision = new DecisionNode(OpponentFleeing, agentScript, enemy);
+        DecisionNode isOpponentFleeingDecision = new DecisionNode(OpponentFleeing);
 
-        inSightDecision.AddNoChild(isPickUpCloseDecision);
-        inSightDecision.AddYesChild(isOpponentFleeingDecision);
+        inSightDecision.AddFalseChild(isPickUpCloseDecision);
+        inSightDecision.AddTrueChild(isOpponentFleeingDecision);
 
         //Decision PowerUpPickedDecision = new Decision(Decisions.IsPowerUpPicked);
-        //DecisionNode isPowerUpPickedDecision = new DecisionNode(PowerUpPickedDecision, agentScript, enemy);
+        //DecisionNode isPowerUpPickedDecision = new DecisionNode(PowerUpPickedDecision);
 
-        Action moveToPPU = new Action(Actions.MoveTowardsPickup, true, false, 0.0f, 1);
-        ActionNode moveToPPUAction = new ActionNode(moveToPPU, agentScript, enemy);       
+        Action moveToPPU = new Action(Actions.MoveTowardsPickup);
+        ActionNode moveToPPUAction = new ActionNode(moveToPPU);
 
-        isPickUpCloseDecision.AddNoChild(randomWanderAction);
-        isPickUpCloseDecision.AddYesChild(moveToPPUAction);
-        //isPickUpCloseDecision.AddYesChild(isPowerUpPickedDecision);
+        isPickUpCloseDecision.AddFalseChild(randomWanderAction);
+        isPickUpCloseDecision.AddTrueChild(moveToPPUAction);
+        ////isPickUpCloseDecision.AddTrueChild(isPowerUpPickedDecision);
 
-        //isPowerUpPickedDecision.AddNoChild(moveToPPUAction);
-        //isPowerUpPickedDecision.AddYesChild(randomWanderAction);
-        
+        ////isPowerUpPickedDecision.AddFalseChild(moveToPPUAction);
+        ////isPowerUpPickedDecision.AddTrueChild(randomWanderAction);
+
 
         Decision attackHigher = new Decision(Decisions.IsAttackPowerHigher);
-        DecisionNode attackHigherDecision = new DecisionNode(attackHigher, agentScript, enemy);
+        DecisionNode attackHigherDecision = new DecisionNode(attackHigher);
 
-        isOpponentFleeingDecision.AddNoChild(attackHigherDecision);
-        isOpponentFleeingDecision.AddYesChild(randomWanderAction);
+        isOpponentFleeingDecision.AddFalseChild(attackHigherDecision);
+        isOpponentFleeingDecision.AddTrueChild(randomWanderAction);
 
         Decision HealthHigh = new Decision(Decisions.IsHealthHigherThan25Percent);
-        DecisionNode HealthHighDecision = new DecisionNode(HealthHigh, agentScript, enemy);
+        DecisionNode HealthHighDecision = new DecisionNode(HealthHigh);
 
-        Action FleeBattle = new Action(Actions.FleeFromBattle, true, false, 0.0f, 5);
-        ActionNode FleeBattleAction = new ActionNode(FleeBattle, agentScript, enemy);
+        Action FleeBattle = new Action(Actions.FleeFromBattle);
+        ActionNode FleeBattleAction = new ActionNode(FleeBattle);
 
-        attackHigherDecision.AddNoChild(FleeBattleAction);
-        attackHigherDecision.AddYesChild(HealthHighDecision);
+        attackHigherDecision.AddFalseChild(FleeBattleAction);
+        attackHigherDecision.AddTrueChild(HealthHighDecision);
 
-        Action moveTo = new Action(Actions.MoveTowardsAgent, true, true, 0.0f, 2);
-        Action attackEnemy = new Action(Actions.AttackOpponent, true, false, 0.2f, 3);
-        ActionSequence MoveAndAttack = new ActionSequence();
+        Action moveTo = new Action(Actions.MoveTowardsAgent);
+        Action attackEnemy = new Action(Actions.AttackOpponent);
+        SequentialActions MoveAndAttack = new SequentialActions();
         MoveAndAttack.AddAction(moveTo);
         MoveAndAttack.AddAction(attackEnemy);
-        ActionNode attackEnemyAction = new ActionNode(MoveAndAttack, agentScript, enemy);
+        ActionNode attackEnemyAction = new ActionNode(MoveAndAttack);
 
-        HealthHighDecision.AddNoChild(FleeBattleAction);
-        HealthHighDecision.AddYesChild(attackEnemyAction);
+        HealthHighDecision.AddFalseChild(FleeBattleAction);
+        HealthHighDecision.AddTrueChild(attackEnemyAction);
 
-        _decisionTree = new DecisionTree(isOpponentAliveDecision);
-
-        _actionExecutor = new ActionExecutions();
-
-    }
-
-    // Use this for initialization
-    void Start ()
-    {
+        decision_tree = new DTAlgorithm(isOpponentAliveDecision);
         
+        action_executor = new ActionExecutor();
 
     }
 
-    // Update is called once per frame
-    void Update ()
+    //Use this for initialization
+
+   void Start ()
     {
-        // use this update to execute your AI algorithm
+
+
+
+    }
+
+    //Update is called once per frame
+    void Update()
+    {
+        //use this update to execute your AI algorithm
         if (agentScript.Alive)
         {
-            IAction action = _decisionTree.Execute();
+            IAction action = decision_tree.Execute(agentScript, enemy);
 
-            _actionExecutor.ScheduleAction(action);
-            _actionExecutor.Execute(agentScript, enemy, Time.deltaTime);
+            action_executor.SetNewAction(action);
+            action_executor.Execute(agentScript, enemy);
         }
 
 

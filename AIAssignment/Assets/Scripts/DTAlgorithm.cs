@@ -258,18 +258,6 @@ public class ActionExecutor : MonoBehaviour
 {
     IAction executing_action;
 
-    // Use this for initialization
-    void Start()
-    {
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-
-    }
 
     public void SetNewAction(IAction new_action)
     {
@@ -284,8 +272,8 @@ public class ActionExecutor : MonoBehaviour
 
     public void Execute(AgentActions agent, GameObject enemy)
     { 
-
         executing_action.Execute(agent, enemy);
+
     }
 }
 

@@ -200,7 +200,16 @@ public class AI : MonoBehaviour
     private ActionExecutor action_executor;
 
     private AgentActions agentScript;
-    public GameObject enemy;
+
+    private List<GameObject> list_enemies;
+    private GameObject enemy;
+
+    private List<GameObject> list_power_pickups;
+    private GameObject pick_up;
+
+    private List<GameObject> list_health_kits;
+    private GameObject health_kit;
+
 
     public void Awake()
     {
@@ -277,7 +286,35 @@ public class AI : MonoBehaviour
 
    void Start ()
     {
+        
 
+        list_enemies = new List<GameObject>();
+        list_power_pickups = new List<GameObject>();
+        list_health_kits = new List<GameObject>();
+
+        foreach(GameObject obj in GameObject.FindGameObjectsWithTag("Enemy"))
+        {
+            if(this.gameObject != obj)
+            {
+                list_enemies.Add(obj);
+            }
+        }
+
+        enemy = list_enemies[0];
+
+        foreach (GameObject obj in GameObject.FindGameObjectsWithTag("Powerup"))
+        {
+            list_power_pickups.Add(obj);
+        }
+
+        pick_up = list_power_pickups[0];
+
+        foreach (GameObject obj in GameObject.FindGameObjectsWithTag("HealthKit"))
+        {
+            list_health_kits.Add(obj);
+        }
+
+        health_kit = list_health_kits[0];
 
 
     }
@@ -285,6 +322,54 @@ public class AI : MonoBehaviour
     //Update is called once per frame
     void Update()
     {
+
+        for(int i = 0; i < list_enemies.Count; i++)
+        {
+            if (list_enemies[i] != null)
+            {
+                if (Vector3.Distance(list_enemies[i].transform.position, this.gameObject.transform.position) < 15)
+                {
+                    enemy = list_enemies[i];
+                    break;
+                }
+
+            }
+            else
+            {
+                list_enemies.Remove(list_enemies[i]);
+            }
+        }
+
+        for (int i = 0; i < list_power_pickups.Count; i++)
+        {
+            if (list_power_pickups[i] != null)
+            {
+                pick_up = list_power_pickups[i];
+                break;
+            }
+            else
+            {
+                list_power_pickups.Remove(list_power_pickups[i]);
+            }
+
+        }
+
+        for (int i = 0; i < list_health_kits.Count; i++)
+        {
+            if (list_health_kits[i] != null)
+            {
+                health_kit = list_health_kits[i];
+                break;
+            }
+            else
+            {
+                list_health_kits.Remove(list_health_kits[i]);
+            }
+
+        }
+
+
+
         //use this update to execute your AI algorithm
         if (agentScript.Alive)
         {
@@ -295,5 +380,8 @@ public class AI : MonoBehaviour
         }
 
 
+
+
     }
+
 }

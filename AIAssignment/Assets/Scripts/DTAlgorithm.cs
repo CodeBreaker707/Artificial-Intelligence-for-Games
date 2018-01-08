@@ -108,9 +108,103 @@ class Actions
 
 public delegate bool MainAction(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit);
 
+
+public interface IAction
+{
+    bool IsComplete { get; }
+
+    void Execute(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit);
+    void Reset();
+}
+
+
+public class Action : IAction
+{
+    MainAction main_action;
+
+    private bool is_complete;
+
+    private float delay;
+    private float timer;
+
+    public Action(MainAction m_action, float time)
+    {
+        main_action = m_action;
+        delay = time;
+        is_complete = true;
+
+    }
+
+    
+
+    public void Execute(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
+    {
+        if(!is_complete)
+        {
+            timer += Time.deltaTime;
+
+
+            if (timer >= delay)
+            {
+                is_complete = main_action.Invoke(agent, enemy, powerPickup, healthKit);
+            }
+
+        }
+    }
+
+    public void Reset()
+    {
+        is_complete = false;
+        timer = 0.0f;
+    }
+
+    public bool IsComplete
+    {
+        get { return is_complete; }
+    }
+
+}
+
+public class SequentialActions : IAction
+{
+    List<Action> sequence = new List<Action>();
+
+    public void AddAction(Action act)
+    {
+        sequence.Add(act);
+    }
+
+    public void Execute(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
+    {
+
+        foreach (Action act in sequence)
+        {
+            act.Execute(agent, enemy, powerPickup, healthKit);
+        }
+
+    }
+
+    public void Reset()
+    {
+        foreach (Action act in sequence)
+        {
+            act.Reset();
+        }
+    }
+
+    public bool IsComplete
+    {
+       
+        get { return sequence[sequence.Count - 1].IsComplete; }
+    }
+        
+    
+
+}
+
 abstract class Node
 {
-   private bool is_Leaf;
+    private bool is_Leaf;
 
     public bool IsLeaf
     {
@@ -194,92 +288,33 @@ class ActionNode : Node
     }
 }
 
-
-
-
-public interface IAction
-{
-    void Execute(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit);
-    void Reset();
-}
-
-
-public class Action : IAction
-{
-    MainAction main_action;
-    public bool is_complete;
-
-    public Action(MainAction m_action)
-    {
-        main_action = m_action;
-    }
-
-    
-
-    public void Execute(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
-    {
-        if(!is_complete)
-        {
-            is_complete = main_action.Invoke(agent, enemy, powerPickup, healthKit);
-        }
-    }
-
-    public void Reset()
-    {
-        is_complete = false;
-    }
-
-}
-
-public class SequentialActions : IAction
-{
-    List<Action> sequence = new List<Action>();
-
-    public void AddAction(Action act)
-    {
-        sequence.Add(act);
-    }
-
-    public void Execute(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
-    {
-
-        foreach (Action act in sequence)
-        {
-            act.Execute(agent, enemy, powerPickup, healthKit);
-        }
-
-    }
-
-    public void Reset()
-    {
-        foreach (Action act in sequence)
-        {
-            act.Reset();
-        }
-    }
-
-    
-
-}
-
 public class ActionExecutor : MonoBehaviour
 {
     IAction executing_action;
 
+    public ActionExecutor(IAction default_action)
+    {
+        executing_action = default_action;
+    }
+
 
     public void SetNewAction(IAction new_action)
     {
-        if (new_action != executing_action)
+        if (executing_action.IsComplete)
         {
-            executing_action = new_action;
-        }
+            if (new_action != executing_action)
+            {
+                executing_action = new_action;
+            }
 
-        executing_action.Reset();
+            executing_action.Reset();
+        }
 
     }
 
     public void Execute(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
+
         executing_action.Execute(agent, enemy, powerPickup, healthKit);
 
     }

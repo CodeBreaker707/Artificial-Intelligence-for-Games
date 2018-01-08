@@ -36,8 +36,6 @@ public class AI : MonoBehaviour
     private List<GameObject> list_enemies;
     private GameObject enemy;
 
-    public int e_count = 0;
-
     private List<GameObject> list_power_pickups;
     private GameObject power_pickup;
 
@@ -52,10 +50,11 @@ public class AI : MonoBehaviour
         Decision HealthHigh = new Decision(Decisions.IsHealthHigherThan25Percent);
         DecisionNode HealthHighDecision = new DecisionNode(HealthHigh);
 
-        Action FleeBattle = new Action(Actions.FleeFromBattle);
+
+        Action FleeBattle = new Action(Actions.FleeFromBattle, 0);
         ActionNode FleeBattleAction = new ActionNode(FleeBattle);
 
-        Action moveTowardsHealthKit = new Action(Actions.MoveTowardsHealthKit);
+        Action moveTowardsHealthKit = new Action(Actions.MoveTowardsHealthKit, 0);
         SequentialActions FleeAndMoveToHealth = new SequentialActions();
         FleeAndMoveToHealth.AddAction(FleeBattle);
         FleeAndMoveToHealth.AddAction(moveTowardsHealthKit);
@@ -72,7 +71,7 @@ public class AI : MonoBehaviour
         HealthHighDecision.AddFalseChild(FleeAndMoveToHealthAction);
         HealthHighDecision.AddTrueChild(inSightDecision);
 
-        Action randomWander = new Action(Actions.RandomWander);
+        Action randomWander = new Action(Actions.RandomWander, 0);
         ActionNode randomWanderAction = new ActionNode(randomWander);
   
 
@@ -91,7 +90,7 @@ public class AI : MonoBehaviour
         //Decision PowerUpPickedDecision = new Decision(Decisions.IsPowerUpPicked);
         //DecisionNode isPowerUpPickedDecision = new DecisionNode(PowerUpPickedDecision);
 
-        Action moveToPPU = new Action(Actions.MoveTowardsPickup);
+        Action moveToPPU = new Action(Actions.MoveTowardsPickup, 0);
         ActionNode moveToPPUAction = new ActionNode(moveToPPU);
 
         isPickUpCloseDecision.AddFalseChild(randomWanderAction);
@@ -109,8 +108,8 @@ public class AI : MonoBehaviour
         isOpponentFleeingDecision.AddTrueChild(randomWanderAction);
 
 
-        Action moveTo = new Action(Actions.MoveTowardsAgent);
-        Action attackEnemy = new Action(Actions.AttackOpponent);
+        Action moveTo = new Action(Actions.MoveTowardsAgent, 0);
+        Action attackEnemy = new Action(Actions.AttackOpponent, 0.15f);
         SequentialActions MoveAndAttack = new SequentialActions();
         MoveAndAttack.AddAction(moveTo);
         MoveAndAttack.AddAction(attackEnemy);
@@ -121,7 +120,7 @@ public class AI : MonoBehaviour
 
         decision_tree = new DTAlgorithm(HealthHighDecision);
         
-        action_executor = new ActionExecutor();
+        action_executor = new ActionExecutor(randomWander);
 
     }
 

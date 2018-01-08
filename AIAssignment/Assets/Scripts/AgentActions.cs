@@ -24,6 +24,8 @@ public class AgentActions : MonoBehaviour
     private const int RandomWanderDistance = 200;
     private const int FleeDistance = 100;
 
+    private int flee_count;
+
     // Are we still alive
     public bool _alive = true;
 
@@ -120,12 +122,17 @@ public class AgentActions : MonoBehaviour
     // Move towards a target object
     public void MoveTo(GameObject target)
     {
-        if(_agent.transform.position == target.transform.position)
+        if (Fleeing == false)
+        {       
+            _agent.destination = target.transform.position;
+        }
+
+        if (_agent.transform.position == target.transform.position)
         {
             Fleeing = false;
         }
 
-        _agent.destination = target.transform.position;
+        
     }
 
     // Randomly wander around the level
@@ -255,8 +262,13 @@ public class AgentActions : MonoBehaviour
     public void Flee(GameObject enemy)
     {
 
-        if (Fleeing == false)
+        if (Vector3.Distance(this.transform.position, enemy.transform.position) > 3)
         {
+            Fleeing = false;
+        }
+        else
+        {
+            Fleeing = true;
 
             // Turn away from the threat
             transform.rotation = Quaternion.LookRotation(transform.position - enemy.transform.position);
@@ -269,8 +281,6 @@ public class AgentActions : MonoBehaviour
             // Check for a point to flee to
             UnityEngine.AI.NavMesh.SamplePosition(runTo, out navHit, FleeDistance, 1 << UnityEngine.AI.NavMesh.GetAreaFromName("Walkable"));
             _agent.SetDestination(navHit.position);
-
-            Fleeing = true;
         }
 
 

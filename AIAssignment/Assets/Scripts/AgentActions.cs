@@ -25,7 +25,8 @@ public class AgentActions : MonoBehaviour
     private const int FleeDistance = 100;
 
     // Are we still alive
-    private bool _alive = true;
+    public bool _alive = true;
+
     public bool Alive
     {
         get { return _alive; }
@@ -60,7 +61,6 @@ public class AgentActions : MonoBehaviour
 
     public Vector3 StartPosition;
     public GameObject Enemy;
-    public GameObject powerPickUp;
 
     // Our current health
     public int _currentHitPoints;
@@ -120,17 +120,12 @@ public class AgentActions : MonoBehaviour
     // Move towards a target object
     public void MoveTo(GameObject target)
     {
-        if(Fleeing == true)
+        if(_agent.transform.position == target.transform.position)
         {
             Fleeing = false;
         }
 
         _agent.destination = target.transform.position;
-    }
-
-    public void MoveToPickup()
-    {
-        _agent.destination = powerPickUp.transform.position;
     }
 
     // Randomly wander around the level
@@ -178,9 +173,9 @@ public class AgentActions : MonoBehaviour
         return false;
     }
 
-    public bool IsInPickUpRange()
+    public bool IsInPickUpRange(GameObject powerPickUp)
     {
-        if(powerPickUp != null)
+        if (powerPickUp != null)
         {
             if (Vector3.Distance(transform.position, powerPickUp.transform.position) < PickUpRange)
             {
@@ -216,7 +211,7 @@ public class AgentActions : MonoBehaviour
     // We've been hit
     public void TakeDamage(int damage)
     {
-        if (_currentHitPoints + damage > 0)
+        if (_currentHitPoints - damage > 0)
         {
             _currentHitPoints -= damage;
         }
@@ -244,6 +239,7 @@ public class AgentActions : MonoBehaviour
     public void Die()
     {
         _alive = false;
+        _agent.isStopped = true;
     }
 
     // Use the power up
@@ -259,26 +255,25 @@ public class AgentActions : MonoBehaviour
     public void Flee(GameObject enemy)
     {
 
-        Fleeing = true;
-        //FleeTimer -= Time.deltaTime;
+        if (Fleeing == false)
+        {
 
-        // Turn away from the threat
-        transform.rotation = Quaternion.LookRotation(transform.position - enemy.transform.position);
-        Vector3 runTo = transform.position + transform.forward * _agent.speed;
+            // Turn away from the threat
+            transform.rotation = Quaternion.LookRotation(transform.position - enemy.transform.position);
+            Vector3 runTo = transform.position + transform.forward * _agent.speed;
 
-        //So now we've got a Vector3 to run to and we can transfer that to a location on the NavMesh with samplePosition.
-        // stores the output in a variable called hit
-        UnityEngine.AI.NavMeshHit navHit;
+            //So now we've got a Vector3 to run to and we can transfer that to a location on the NavMesh with samplePosition.
+            // stores the output in a variable called hit
+            UnityEngine.AI.NavMeshHit navHit;
 
-        // Check for a point to flee to
-        UnityEngine.AI.NavMesh.SamplePosition(runTo, out navHit, FleeDistance, 1 << UnityEngine.AI.NavMesh.GetAreaFromName("Walkable"));
-        _agent.SetDestination(navHit.position);
+            // Check for a point to flee to
+            UnityEngine.AI.NavMesh.SamplePosition(runTo, out navHit, FleeDistance, 1 << UnityEngine.AI.NavMesh.GetAreaFromName("Walkable"));
+            _agent.SetDestination(navHit.position);
 
-        //if(FleeTimer <= 0)
-        //{
+            Fleeing = true;
+        }
 
-        //}
-        
+
 
     }
 

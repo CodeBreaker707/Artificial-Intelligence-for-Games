@@ -7,32 +7,32 @@ using UnityEngine;
 class Decisions
 {
 
-    public static bool IsOpponentAlive(AgentActions agent, GameObject enemy)
+    public static bool IsOpponentAlive(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
         return enemy.GetComponent<AgentActions>().Alive;
     }
 
-    public static bool IsAgentInSight(AgentActions agent, GameObject enemy)
+    public static bool IsAgentInSight(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
         return agent.IsInAttackRange(enemy);
     }
 
-    public static bool IsOpponentFleeing(AgentActions agent, GameObject enemy)
+    public static bool IsOpponentFleeing(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
         return enemy.GetComponent<AgentActions>().Fleeing;
     }
 
-    public static bool IsPowerUpClose(AgentActions agent, GameObject enemy)
+    public static bool IsPowerUpClose(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
-        return agent.IsInPickUpRange();
+        return agent.IsInPickUpRange(powerPickup);
     }
 
-    public static bool IsPowerUpPicked(AgentActions agent, GameObject enemy)
+    public static bool IsPowerUpPicked(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
         return agent.HasPowerUp;
     }
 
-    public static bool IsAttackPowerHigher(AgentActions agent, GameObject enemy)
+    public static bool IsAttackPowerHigher(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
         if (agent.PowerUp >= enemy.GetComponent<AgentActions>().PowerUp)
         {
@@ -45,7 +45,7 @@ class Decisions
 
     }
 
-    public static bool IsHealthHigherThan25Percent(AgentActions agent, GameObject enemy)
+    public static bool IsHealthHigherThan25Percent(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
         if (agent.CurrentHitPoints > 0.25 * agent.MaxHitPoints)
         {
@@ -61,36 +61,44 @@ class Decisions
 
 }
 
+public delegate bool Decision(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit);
+
 // Here are all the actions we can take
 // All actions return true once they have completed, false otherwise
 class Actions
 {
 
-    public static bool MoveTowardsPickup(AgentActions agent, GameObject enemy)
+    public static bool MoveTowardsPickup(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
-        agent.MoveToPickup();
+        agent.MoveTo(powerPickup);
         return true;
     }
 
-    public static bool RandomWander(AgentActions agent, GameObject enemy)
+    public static bool MoveTowardsHealthKit(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
+    {
+        agent.MoveTo(healthKit);
+        return true;
+    }
+
+    public static bool RandomWander(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
         agent.RandomWander();
         return true;
     }
 
-    public static bool MoveTowardsAgent(AgentActions agent, GameObject enemy)
+    public static bool MoveTowardsAgent(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
         agent.MoveTo(enemy);
         return true;
     }
 
-    public static bool AttackOpponent(AgentActions agent, GameObject enemy)
+    public static bool AttackOpponent(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
         agent.AttackEnemy(enemy);
         return true;
     }
 
-    public static bool FleeFromBattle(AgentActions agent, GameObject enemy)
+    public static bool FleeFromBattle(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
         agent.Flee(enemy);
         return true;
@@ -98,7 +106,7 @@ class Actions
 
 }
 
-
+public delegate bool MainAction(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit);
 
 abstract class Node
 {
@@ -110,12 +118,12 @@ abstract class Node
         set { is_Leaf = value; }
     }
 
-    public abstract Node MakeDecision(AgentActions agent, GameObject enemy);
+    public abstract Node MakeDecision(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit);
     public abstract IAction GetAction();
 
 }
 
-public delegate bool Decision(AgentActions agent, GameObject enemy);
+
 
 class DecisionNode : Node
 {
@@ -144,9 +152,9 @@ class DecisionNode : Node
         false_child = child;
     }
 
-    public override Node MakeDecision(AgentActions agent, GameObject enemy)
+    public override Node MakeDecision(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
-        if (current_decision.Invoke(agent, enemy))
+        if (current_decision.Invoke(agent, enemy, powerPickup, healthKit) == true)
         {
             return true_child;
         }
@@ -175,7 +183,7 @@ class ActionNode : Node
 
     }
 
-    public override Node MakeDecision(AgentActions agent, GameObject enemy)
+    public override Node MakeDecision(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
         return null;
     }
@@ -186,12 +194,12 @@ class ActionNode : Node
     }
 }
 
-public delegate bool MainAction(AgentActions agent, GameObject enemy);
+
 
 
 public interface IAction
 {
-    void Execute(AgentActions agent, GameObject enemy);
+    void Execute(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit);
     void Reset();
 }
 
@@ -208,11 +216,11 @@ public class Action : IAction
 
     
 
-    public void Execute(AgentActions agent, GameObject enemy)
+    public void Execute(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
         if(!is_complete)
         {
-            is_complete = main_action.Invoke(agent, enemy);
+            is_complete = main_action.Invoke(agent, enemy, powerPickup, healthKit);
         }
     }
 
@@ -232,12 +240,12 @@ public class SequentialActions : IAction
         sequence.Add(act);
     }
 
-    public void Execute(AgentActions agent, GameObject enemy)
+    public void Execute(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
 
         foreach (Action act in sequence)
         {
-            act.Execute(agent, enemy);
+            act.Execute(agent, enemy, powerPickup, healthKit);
         }
 
     }
@@ -270,9 +278,9 @@ public class ActionExecutor : MonoBehaviour
 
     }
 
-    public void Execute(AgentActions agent, GameObject enemy)
-    { 
-        executing_action.Execute(agent, enemy);
+    public void Execute(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
+    {
+        executing_action.Execute(agent, enemy, powerPickup, healthKit);
 
     }
 }
@@ -294,13 +302,13 @@ class DTAlgorithm : MonoBehaviour
 
     }
 
-    public IAction Execute(AgentActions agent, GameObject enemy)
+    public IAction Execute(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
-        Traverse(root_node, agent, enemy);
+        Traverse(root_node, agent, enemy, powerPickup, healthKit);
         return leaf_action;
     }
 
-    public void Traverse(Node cur_node, AgentActions agent, GameObject enemy)
+    public void Traverse(Node cur_node, AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
         if(cur_node.IsLeaf)
         {
@@ -308,8 +316,8 @@ class DTAlgorithm : MonoBehaviour
         }
         else
         {
-            current_node = cur_node.MakeDecision(agent, enemy);
-            Traverse(current_node, agent, enemy);
+            current_node = cur_node.MakeDecision(agent, enemy, powerPickup, healthKit);
+            Traverse(current_node, agent, enemy, powerPickup, healthKit);
         }
     }
 

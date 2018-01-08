@@ -22,176 +22,6 @@ using UnityEngine;
 * 
 *****************************************************************************************************************************/
 
-//We use this abstract base class so the tree traversal algorithm only has to worry about nodes
-// and not whether they are decision or action nodes
-//abstract class Node
-//{
-//    protected bool _isLeaf;
-
-//    // Keep track of whether we're a leaf node or not for the travesal algorithm to
-//    // decide whether to recurse or not
-//    public bool IsLeaf
-//    {
-//        get { return _isLeaf; }
-//    }
-
-//    // Nodes can either make decisions or take actions
-//    // These will be implemented in the appropriate subclasses
-//    public abstract IAction GetAction();
-//    public abstract Node MakeDecision();
-//}
-
-////This declares a delagate which will actually make the decision
-//// A delegate is a reference to a function
-//public delegate bool Decision(AgentActions _agent, GameObject enemy);
-
-//// This is a sublass of node responsible for making desicions
-//class DecisionNode : Node
-//{
-//    // An agent and the opponent
-//    AgentActions _agent;
-//    GameObject _enemy;
-
-//    // The left and right child nodes, representing yes and no decisions respectively
-//    Node _yesChild;
-//    Node _noChild;
-
-//    // The decision to make
-//    Decision _decision;
-
-//    // Initialise the decision node
-//    public DecisionNode(Decision decision, AgentActions agent, GameObject enemy)
-//    {
-//        // Decision nodes are never leaf nodes
-//        _isLeaf = false;
-
-//        _yesChild = null;
-//        _noChild = null;
-
-//        _decision = decision;
-//        _agent = agent;
-//        _enemy = enemy;
-
-//    }
-
-//    // Add a 'yes' child node
-//    public void AddTrueChild(Node child)
-//    {
-//        _yesChild = child;
-//    }
-
-//    // Add a node child node
-//    public void AddFalseChild(Node child)
-//    {
-//        _noChild = child;
-//    }
-
-//    // Execute the desicion delegate and return the appropriate child node
-//    public override Node MakeDecision()
-//    {
-//        if (_decision.Invoke(_agent, _enemy))
-//        {
-//            // The decision is yes, return the 'yes' child
-//            return _yesChild;
-//        }
-//        else
-//        {
-//            // The desicion is no, return the 'no' node
-//            return _noChild;
-//        }
-//    }
-
-//    // This is just a place holder to stop the compiler complaing that we haven't implemented the abstract function
-//    public override IAction GetAction()
-//    {
-//        // Do nothing
-//        return null;
-//    }
-//}
-
-//class ActionNode : Node
-//{
-//    // The agents
-//    AgentActions _agent;
-//    GameObject _enemy;
-
-//    // The action to take
-//    IAction _action;
-
-//    public ActionNode(IAction action, AgentActions agent, GameObject enemy)
-//    {
-//        // Action nodes are always leaf nodes
-//        _isLeaf = true;
-//        _action = action;
-//        _agent = agent;
-//        _enemy = enemy;
-//    }
-
-//    // This is just a place holder to stop the compiler complaing that we haven't implemented the abstract function 
-//    public override Node MakeDecision()
-//    {
-//        // Do nothing, returning null ensures no meaningful decision is attempted
-//        return null;
-//    }
-
-//    // This function will return its stored action
-//    public override IAction GetAction()
-//    {
-//        return _action;
-//    }
-//}
-
-//// This is the decision tree itself, it stores the root node and the
-//// node currently being visited during traversal
-//class DecisionTree
-//{
-//    // The root node of the tree
-//    Node _root;
-//    // The node we are currently visiting
-//    Node _currentNode;
-
-//    IAction _selectedAction = null;
-
-//    // Initialise the tree
-//    public DecisionTree(Node root)
-//    {
-//        _root = root;
-
-//        // Start at the root
-//        _currentNode = _root;
-//    }
-
-//    // Start running the traversal
-//    public IAction Execute()
-//    {
-//        // Start traversal at the root
-//        Traverse(_root);
-//        return _selectedAction;
-//    }
-
-//    // Recursively traverse the tree untill we reach a leaf node
-//    private void Traverse(Node currentNode)
-//    {
-//        // Have we arrived at a leaf node?
-//        if (currentNode.IsLeaf)
-//        {
-//            //_currentActionName = currentNode.GetDelegateName();
-//            // Exceute the appropriate action
-//            _selectedAction = currentNode.GetAction();
-//        }
-//        // Otherwise continue down the tree
-//        else
-//        {
-//            // Decide whether to go down the 'yes' branch or the 'no' branch
-//            // _currentNode is set to the appropriate child node depending on the decision
-//            _currentNode = currentNode.MakeDecision();
-
-//            // Recurse on the child node
-//            Traverse(_currentNode);
-//        }
-//    }
-//}
-
 public class AI : MonoBehaviour
 {
     //This is the script containing the AI agents actions
@@ -199,13 +29,17 @@ public class AI : MonoBehaviour
     private DTAlgorithm decision_tree;
     private ActionExecutor action_executor;
 
+    private float closestDistance = 100.0f;
+
     private AgentActions agentScript;
 
     private List<GameObject> list_enemies;
     private GameObject enemy;
 
+    public int e_count = 0;
+
     private List<GameObject> list_power_pickups;
-    private GameObject pick_up;
+    private GameObject power_pickup;
 
     private List<GameObject> list_health_kits;
     private GameObject health_kit;
@@ -215,18 +49,35 @@ public class AI : MonoBehaviour
     {
         agentScript = this.gameObject.GetComponent<AgentActions>();
 
+        Decision HealthHigh = new Decision(Decisions.IsHealthHigherThan25Percent);
+        DecisionNode HealthHighDecision = new DecisionNode(HealthHigh);
 
-        Decision OpponentAlive = new Decision(Decisions.IsOpponentAlive);
-        DecisionNode isOpponentAliveDecision = new DecisionNode(OpponentAlive);
+        Action FleeBattle = new Action(Actions.FleeFromBattle);
+        ActionNode FleeBattleAction = new ActionNode(FleeBattle);
 
-        Action randomWander = new Action(Actions.RandomWander);
-        ActionNode randomWanderAction = new ActionNode(randomWander);
+        Action moveTowardsHealthKit = new Action(Actions.MoveTowardsHealthKit);
+        SequentialActions FleeAndMoveToHealth = new SequentialActions();
+        FleeAndMoveToHealth.AddAction(FleeBattle);
+        FleeAndMoveToHealth.AddAction(moveTowardsHealthKit);
+        ActionNode FleeAndMoveToHealthAction = new ActionNode(FleeAndMoveToHealth);
+
+        //ActionNode moveTowardsHealthKitAction = new ActionNode(moveTowardsHealthKit);
+
+       // Decision OpponentAlive = new Decision(Decisions.IsOpponentAlive);
+       // DecisionNode isOpponentAliveDecision = new DecisionNode(OpponentAlive);
 
         Decision sightDecision = new Decision(Decisions.IsAgentInSight);
         DecisionNode inSightDecision = new DecisionNode(sightDecision);
 
-        isOpponentAliveDecision.AddFalseChild(randomWanderAction);
-        isOpponentAliveDecision.AddTrueChild(inSightDecision);
+        HealthHighDecision.AddFalseChild(FleeAndMoveToHealthAction);
+        HealthHighDecision.AddTrueChild(inSightDecision);
+
+        Action randomWander = new Action(Actions.RandomWander);
+        ActionNode randomWanderAction = new ActionNode(randomWander);
+  
+
+        //isOpponentAliveDecision.AddFalseChild(randomWanderAction);
+        //isOpponentAliveDecision.AddTrueChild(inSightDecision);
 
         Decision pickUpDecision = new Decision(Decisions.IsPowerUpClose);
         DecisionNode isPickUpCloseDecision = new DecisionNode(pickUpDecision);
@@ -257,14 +108,6 @@ public class AI : MonoBehaviour
         isOpponentFleeingDecision.AddFalseChild(attackHigherDecision);
         isOpponentFleeingDecision.AddTrueChild(randomWanderAction);
 
-        Decision HealthHigh = new Decision(Decisions.IsHealthHigherThan25Percent);
-        DecisionNode HealthHighDecision = new DecisionNode(HealthHigh);
-
-        Action FleeBattle = new Action(Actions.FleeFromBattle);
-        ActionNode FleeBattleAction = new ActionNode(FleeBattle);
-
-        attackHigherDecision.AddFalseChild(FleeBattleAction);
-        attackHigherDecision.AddTrueChild(HealthHighDecision);
 
         Action moveTo = new Action(Actions.MoveTowardsAgent);
         Action attackEnemy = new Action(Actions.AttackOpponent);
@@ -273,10 +116,10 @@ public class AI : MonoBehaviour
         MoveAndAttack.AddAction(attackEnemy);
         ActionNode attackEnemyAction = new ActionNode(MoveAndAttack);
 
-        HealthHighDecision.AddFalseChild(FleeBattleAction);
-        HealthHighDecision.AddTrueChild(attackEnemyAction);
+        attackHigherDecision.AddFalseChild(FleeBattleAction);
+        attackHigherDecision.AddTrueChild(attackEnemyAction);
 
-        decision_tree = new DTAlgorithm(isOpponentAliveDecision);
+        decision_tree = new DTAlgorithm(HealthHighDecision);
         
         action_executor = new ActionExecutor();
 
@@ -285,8 +128,7 @@ public class AI : MonoBehaviour
     //Use this for initialization
 
    void Start ()
-    {
-        
+    {        
 
         list_enemies = new List<GameObject>();
         list_power_pickups = new List<GameObject>();
@@ -307,7 +149,7 @@ public class AI : MonoBehaviour
             list_power_pickups.Add(obj);
         }
 
-        pick_up = list_power_pickups[0];
+        power_pickup = list_power_pickups[0];
 
         foreach (GameObject obj in GameObject.FindGameObjectsWithTag("HealthKit"))
         {
@@ -322,15 +164,16 @@ public class AI : MonoBehaviour
     //Update is called once per frame
     void Update()
     {
+        closestDistance = 100.0f;
 
         for(int i = 0; i < list_enemies.Count; i++)
         {
-            if (list_enemies[i] != null)
+            if (list_enemies[i].GetComponent<AgentActions>().Alive && list_enemies[i] != null)
             {
-                if (Vector3.Distance(list_enemies[i].transform.position, this.gameObject.transform.position) < 15)
+                if (Vector3.Distance(list_enemies[i].transform.position, this.gameObject.transform.position) < closestDistance)
                 {
                     enemy = list_enemies[i];
-                    break;
+                    closestDistance = Vector3.Distance(list_enemies[i].transform.position, this.gameObject.transform.position);
                 }
 
             }
@@ -338,14 +181,22 @@ public class AI : MonoBehaviour
             {
                 list_enemies.Remove(list_enemies[i]);
             }
+
+
         }
+
+        closestDistance = 100.0f;
 
         for (int i = 0; i < list_power_pickups.Count; i++)
         {
             if (list_power_pickups[i] != null)
             {
-                pick_up = list_power_pickups[i];
-                break;
+                if (Vector3.Distance(list_power_pickups[i].transform.position, this.gameObject.transform.position) < closestDistance)
+                {
+                    power_pickup = list_power_pickups[i];
+                    closestDistance = Vector3.Distance(list_power_pickups[i].transform.position, this.gameObject.transform.position);
+                }
+
             }
             else
             {
@@ -354,12 +205,17 @@ public class AI : MonoBehaviour
 
         }
 
+        closestDistance = 100.0f;
+
         for (int i = 0; i < list_health_kits.Count; i++)
         {
             if (list_health_kits[i] != null)
             {
-                health_kit = list_health_kits[i];
-                break;
+                if (Vector3.Distance(list_health_kits[i].transform.position, this.gameObject.transform.position) < closestDistance)
+                {
+                    health_kit = list_health_kits[i];
+                    closestDistance = Vector3.Distance(list_health_kits[i].transform.position, this.gameObject.transform.position);
+                }
             }
             else
             {
@@ -373,12 +229,11 @@ public class AI : MonoBehaviour
         //use this update to execute your AI algorithm
         if (agentScript.Alive)
         {
-            IAction action = decision_tree.Execute(agentScript, enemy);
+            IAction action = decision_tree.Execute(agentScript, enemy, power_pickup, health_kit);
 
             action_executor.SetNewAction(action);
-            action_executor.Execute(agentScript, enemy);
+            action_executor.Execute(agentScript, enemy, power_pickup, health_kit);
         }
-
 
 
 

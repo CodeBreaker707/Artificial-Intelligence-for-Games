@@ -24,8 +24,6 @@ public class AgentActions : MonoBehaviour
     private const int RandomWanderDistance = 200;
     private const int FleeDistance = 100;
 
-    private int flee_count;
-
     // Are we still alive
     public bool _alive = true;
 
@@ -62,7 +60,6 @@ public class AgentActions : MonoBehaviour
     }
 
     public Vector3 StartPosition;
-    public GameObject Enemy;
 
     // Our current health
     public int _currentHitPoints;
@@ -78,6 +75,7 @@ public class AgentActions : MonoBehaviour
 
     // Our navigation agent
     private UnityEngine.AI.NavMeshAgent _agent;
+    public GameObject enemy;
 
     // Check for collisions with everything when checking for a random location for the wander function
     private const int AgentLayerMask = -1;
@@ -290,7 +288,7 @@ public class AgentActions : MonoBehaviour
     // Check if something of interest is in range
     public bool IsObjectInView(String name)
     {
-        // If we can percieve it retern it, otherwise return null
+        // If we can perceive it return it, otherwise return null
         GameObject objectPercieved;
         if (ObjectsPercieved.TryGetValue(name, out objectPercieved))
         {
@@ -305,7 +303,7 @@ public class AgentActions : MonoBehaviour
     // Get a percieved object, null if object is not in view
     public GameObject GetObjectInView(String name)
     {
-        // If we can percieve it retern it, otherwise return null
+        // If we can perceive it return it, otherwise return null
         GameObject objectPercieved;
         if (ObjectsPercieved.TryGetValue(name, out objectPercieved))
         {

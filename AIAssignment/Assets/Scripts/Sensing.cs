@@ -20,17 +20,31 @@ public class Sensing : MonoBehaviour
     private void OnTriggerStay(Collider other)
     {
         // We only want to track enemies, powerups and health kits
+
         if (other.gameObject.CompareTag(Constants.EnemyTag) || other.gameObject.CompareTag(Constants.PowerUpTag) || other.gameObject.CompareTag(Constants.HealthKitTag))
-        {           
+        {
+
             // This layer mask should only register collisions with walls
+
             int layerMask = 1 << WallLayer;
+
+            // Do this to prevent the raycast finding a wall behind the object and therefore treating the object as obstructed
+
+            float objectDistance = Mathf.Min(Vector3.Distance(transform.position, other.gameObject.transform.position), ViewRange);
+
             // Ensure we are not looking through a wall
-            if (!Physics.Raycast(transform.position, other.gameObject.transform.position - transform.position, ViewRange, layerMask))
+
+            if (!Physics.Raycast(transform.position, other.gameObject.transform.position - transform.position, objectDistance, layerMask))
+
             {
                 // We can see it
                 agentScript.AddToPercievedObjectsList(other.gameObject);
+
             }
+
         }
+
+
     }
 
     // Something has left our view

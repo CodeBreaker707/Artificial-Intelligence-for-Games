@@ -60,7 +60,6 @@ public class AI : MonoBehaviour
         FleeAndMoveToHealth.AddAction(moveTowardsHealthKit);
         ActionNode FleeAndMoveToHealthAction = new ActionNode(FleeAndMoveToHealth);
 
-        //ActionNode moveTowardsHealthKitAction = new ActionNode(moveTowardsHealthKit);
 
        // Decision OpponentAlive = new Decision(Decisions.IsOpponentAlive);
        // DecisionNode isOpponentAliveDecision = new DecisionNode(OpponentAlive);
@@ -163,9 +162,9 @@ public class AI : MonoBehaviour
     //Update is called once per frame
     void Update()
     {
-        closestDistance = 100.0f;
+        closestDistance = Mathf.Infinity;
 
-        for(int i = 0; i < list_enemies.Count; i++)
+        for (int i = 0; i < list_enemies.Count; i++)
         {
             if (list_enemies[i].GetComponent<AgentActions>().Alive && list_enemies[i] != null)
             {
@@ -184,7 +183,7 @@ public class AI : MonoBehaviour
 
         }
 
-        closestDistance = 100.0f;
+        closestDistance = Mathf.Infinity;
 
         for (int i = 0; i < list_power_pickups.Count; i++)
         {
@@ -204,7 +203,7 @@ public class AI : MonoBehaviour
 
         }
 
-        closestDistance = 100.0f;
+        closestDistance = Mathf.Infinity;
 
         for (int i = 0; i < list_health_kits.Count; i++)
         {
@@ -222,7 +221,6 @@ public class AI : MonoBehaviour
             }
 
         }
-
 
 
         //use this update to execute your AI algorithm

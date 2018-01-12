@@ -38,7 +38,8 @@ public class Sensing : MonoBehaviour
 
             {
                 // We can see it
-                agentScript.AddToPercievedObjectsList(other.gameObject);
+                //agentScript.AddToPercievedObjectsList(other.gameObject);
+                agentScript.AddToSeenObjects(other.gameObject);
 
             }
 
@@ -50,7 +51,8 @@ public class Sensing : MonoBehaviour
     // Something has left our view
     private void OnTriggerExit(Collider other)
     {
-        agentScript.RemoveFromPercievedObjectList(other.gameObject);
+        //agentScript.RemoveFromPercievedObjectList(other.gameObject);
+        agentScript.RemoveFromSeenObjects(other.gameObject);
     }
 
 }

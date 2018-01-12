@@ -14,6 +14,20 @@ class Decisions
 
     public static bool IsAgentInSight(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
+        //return agent.IsInAttackRange(enemy);
+        if(agent.GetGameObjectsInViewOfTag(Constants.EnemyTag).Count > 0)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+
+    }
+
+    public static bool IsInAttackDistance(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
+    {
         return agent.IsInAttackRange(enemy);
     }
 
@@ -22,9 +36,31 @@ class Decisions
         return enemy.GetComponent<AgentActions>().Fleeing;
     }
 
-    public static bool IsPowerUpClose(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
+    public static bool IsPowerUpInSight(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
-        return agent.IsInPickUpRange(powerPickup);
+        //return agent.IsInPickUpRange(powerPickup);
+        if(agent.GetGameObjectsInViewOfTag(Constants.PowerUpTag).Count > 0)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+
+    }
+
+    public static bool IsHealthKitInSight(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
+    {
+        if(agent.GetGameObjectsInViewOfTag(Constants.HealthKitTag).Count > 0)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+
     }
 
     public static bool IsPowerUpPicked(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)

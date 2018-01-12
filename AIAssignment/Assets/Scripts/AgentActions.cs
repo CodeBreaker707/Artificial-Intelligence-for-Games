@@ -15,7 +15,7 @@ public class AgentActions : MonoBehaviour
 {
     // Agent stats
     public int maxHitPoints = 100;
-    public const float AttackRange = 2.0f;
+    public const float AttackRange = 1.0f;
     public const int NormalAttackDamage = 10;
     public const float HitProbability = 0.5f;
     public const float PickUpRange = 2.0f;
@@ -87,6 +87,8 @@ public class AgentActions : MonoBehaviour
     // Keep track of game objects in our visual field
     private Dictionary<String, GameObject> ObjectsPercieved = new Dictionary<String, GameObject>();
 
+    private List<GameObject> seen_objects;
+
     // The inventory
     //private Dictionary<String, GameObject> Inventory = new Dictionary<string, GameObject>();
 
@@ -96,6 +98,9 @@ public class AgentActions : MonoBehaviour
         StartPosition = transform.position;
         _agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
         _currentHitPoints = MaxHitPoints;
+
+        seen_objects = new List<GameObject>();
+
     }
 
     public void AddToPercievedObjectsList(GameObject seenObject)
@@ -106,6 +111,17 @@ public class AgentActions : MonoBehaviour
         {
             ObjectsPercieved.Add(seenObject.gameObject.name, seenObject.gameObject);
         }
+
+
+    }
+
+    public void AddToSeenObjects(GameObject seen_obj)
+    {
+        if(!seen_objects.Contains(seen_obj))
+        {
+            seen_objects.Add(seen_obj);
+        }
+
     }
 
     public void RemoveFromPercievedObjectList(GameObject unseenObject)
@@ -115,20 +131,33 @@ public class AgentActions : MonoBehaviour
         {
             ObjectsPercieved.Remove(unseenObject.gameObject.name);
         }
+
+    }
+
+    public void RemoveFromSeenObjects(GameObject unseen_obj)
+    {
+        if(seen_objects.Contains(unseen_obj))
+        {
+            seen_objects.Remove(unseen_obj);
+        }
+
     }
 
     // Move towards a target object
     public void MoveTo(GameObject target)
     {
-        if (Fleeing == false)
-        {       
-            _agent.destination = target.transform.position;
-        }
-
-        if (_agent.transform.position == target.transform.position)
+        if (Fleeing == true)
         {
+            //_agent.destination = target.transform.position;
             Fleeing = false;
         }
+
+        //if (_agent.transform.position == target.transform.position)
+        //{
+        //    Fleeing = false;
+        //}
+
+        _agent.destination = target.transform.position;
 
         
     }
@@ -300,6 +329,11 @@ public class AgentActions : MonoBehaviour
         }
     }
 
+    //public bool IsItSeen(String seen_tag)
+    //{
+    //    if (seen_objects.)
+    //}
+
     // Get a percieved object, null if object is not in view
     public GameObject GetObjectInView(String name)
     {
@@ -314,4 +348,23 @@ public class AgentActions : MonoBehaviour
             return null;
         }
     }
+
+
+    public List<GameObject> GetGameObjectsInViewOfTag(String seen_tag)
+    {
+        List<GameObject> temp_list;
+
+        temp_list = new List<GameObject>();
+
+        foreach (GameObject obj in seen_objects)
+        {
+            if(obj.tag == seen_tag)
+            {
+                temp_list.Add(obj);
+            }
+        }
+
+        return temp_list;
+    }
+
 }

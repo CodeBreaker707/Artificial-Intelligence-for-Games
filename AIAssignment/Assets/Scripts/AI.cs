@@ -50,50 +50,70 @@ public class AI : MonoBehaviour
         Decision HealthHigh = new Decision(Decisions.IsHealthHigherThan25Percent);
         DecisionNode HealthHighDecision = new DecisionNode(HealthHigh);
 
+        Decision sightDecision = new Decision(Decisions.IsAgentInSight);
+
+        DecisionNode inSightWithLessHealthDecision = new DecisionNode(sightDecision);
+
+       
+
+        //SequentialActions FleeAndMoveToHealth = new SequentialActions();
+        //FleeAndMoveToHealth.AddAction(FleeBattle);
+        //FleeAndMoveToHealth.AddAction(moveTowardsHealthKit);
+
+
+        // Decision OpponentAlive = new Decision(Decisions.IsOpponentAlive);
+        // DecisionNode isOpponentAliveDecision = new DecisionNode(OpponentAlive);
+
+        
+        DecisionNode inSightWithMoreHealthDecision = new DecisionNode(sightDecision);
+
+        HealthHighDecision.AddFalseChild(inSightWithLessHealthDecision);
+        HealthHighDecision.AddTrueChild(inSightWithMoreHealthDecision);
+
+        Decision isHealthKitInSight = new Decision(Decisions.IsHealthKitInSight);
+        DecisionNode isHealthKitInSightDecision = new DecisionNode(isHealthKitInSight);
 
         Action FleeBattle = new Action(Actions.FleeFromBattle, 0);
         ActionNode FleeBattleAction = new ActionNode(FleeBattle);
+        
 
-        Action moveTowardsHealthKit = new Action(Actions.MoveTowardsHealthKit, 0);
-        SequentialActions FleeAndMoveToHealth = new SequentialActions();
-        FleeAndMoveToHealth.AddAction(FleeBattle);
-        FleeAndMoveToHealth.AddAction(moveTowardsHealthKit);
-        ActionNode FleeAndMoveToHealthAction = new ActionNode(FleeAndMoveToHealth);
-
-
-       // Decision OpponentAlive = new Decision(Decisions.IsOpponentAlive);
-       // DecisionNode isOpponentAliveDecision = new DecisionNode(OpponentAlive);
-
-        Decision sightDecision = new Decision(Decisions.IsAgentInSight);
-        DecisionNode inSightDecision = new DecisionNode(sightDecision);
-
-        HealthHighDecision.AddFalseChild(FleeAndMoveToHealthAction);
-        HealthHighDecision.AddTrueChild(inSightDecision);
+        inSightWithLessHealthDecision.AddFalseChild(isHealthKitInSightDecision);
+        inSightWithLessHealthDecision.AddTrueChild(FleeBattleAction);
 
         Action randomWander = new Action(Actions.RandomWander, 0);
         ActionNode randomWanderAction = new ActionNode(randomWander);
-  
+
+        Action moveTowardsHealthKit = new Action(Actions.MoveTowardsHealthKit, 0);
+        ActionNode MoveToHealthAction = new ActionNode(moveTowardsHealthKit);
+
+        isHealthKitInSightDecision.AddFalseChild(randomWanderAction);
+        isHealthKitInSightDecision.AddTrueChild(MoveToHealthAction);
+
 
         //isOpponentAliveDecision.AddFalseChild(randomWanderAction);
         //isOpponentAliveDecision.AddTrueChild(inSightDecision);
 
-        Decision pickUpDecision = new Decision(Decisions.IsPowerUpClose);
-        DecisionNode isPickUpCloseDecision = new DecisionNode(pickUpDecision);
+        Decision PowerUpPickedDecision = new Decision(Decisions.IsPowerUpPicked);
+        DecisionNode isPowerUpPickedDecision = new DecisionNode(PowerUpPickedDecision);
 
         Decision OpponentFleeing = new Decision(Decisions.IsOpponentFleeing);
         DecisionNode isOpponentFleeingDecision = new DecisionNode(OpponentFleeing);
 
-        inSightDecision.AddFalseChild(isPickUpCloseDecision);
-        inSightDecision.AddTrueChild(isOpponentFleeingDecision);
+        inSightWithMoreHealthDecision.AddFalseChild(isPowerUpPickedDecision);
+        inSightWithMoreHealthDecision.AddTrueChild(isOpponentFleeingDecision);
 
-        //Decision PowerUpPickedDecision = new Decision(Decisions.IsPowerUpPicked);
-        //DecisionNode isPowerUpPickedDecision = new DecisionNode(PowerUpPickedDecision);
+
+        Decision isPowerUpPickupInSight = new Decision(Decisions.IsPowerUpInSight);
+        DecisionNode isPickUpInSightDecision = new DecisionNode(isPowerUpPickupInSight);
+
+        isPowerUpPickedDecision.AddFalseChild(isPickUpInSightDecision);
+        isPowerUpPickedDecision.AddTrueChild(randomWanderAction);
 
         Action moveToPPU = new Action(Actions.MoveTowardsPickup, 0);
         ActionNode moveToPPUAction = new ActionNode(moveToPPU);
 
-        isPickUpCloseDecision.AddFalseChild(randomWanderAction);
-        isPickUpCloseDecision.AddTrueChild(moveToPPUAction);
+        isPickUpInSightDecision.AddFalseChild(randomWanderAction);
+        isPickUpInSightDecision.AddTrueChild(moveToPPUAction);
         ////isPickUpCloseDecision.AddTrueChild(isPowerUpPickedDecision);
 
         ////isPowerUpPickedDecision.AddFalseChild(moveToPPUAction);
@@ -106,16 +126,23 @@ public class AI : MonoBehaviour
         isOpponentFleeingDecision.AddFalseChild(attackHigherDecision);
         isOpponentFleeingDecision.AddTrueChild(randomWanderAction);
 
-
-        Action moveTo = new Action(Actions.MoveTowardsAgent, 0);
-        Action attackEnemy = new Action(Actions.AttackOpponent, 0.15f);
-        SequentialActions MoveAndAttack = new SequentialActions();
-        MoveAndAttack.AddAction(moveTo);
-        MoveAndAttack.AddAction(attackEnemy);
-        ActionNode attackEnemyAction = new ActionNode(MoveAndAttack);
+        Decision inAttackRange = new Decision(Decisions.IsInAttackDistance);
+        DecisionNode inAttackRangeDecision = new DecisionNode(inAttackRange);
 
         attackHigherDecision.AddFalseChild(FleeBattleAction);
-        attackHigherDecision.AddTrueChild(attackEnemyAction);
+        attackHigherDecision.AddTrueChild(inAttackRangeDecision);
+
+        Action moveToAgent = new Action(Actions.MoveTowardsAgent, 0);
+        ActionNode moveToAgentAction = new ActionNode(moveToAgent);
+
+        //SequentialActions MoveAndAttack = new SequentialActions();
+        //MoveAndAttack.AddAction(moveTo);
+        //MoveAndAttack.AddAction(attackEnemy);
+        Action attackEnemy = new Action(Actions.AttackOpponent, 0.15f);
+        ActionNode attackEnemyAction = new ActionNode(attackEnemy);
+
+        inAttackRangeDecision.AddFalseChild(moveToAgentAction);
+        inAttackRangeDecision.AddTrueChild(attackEnemyAction);
 
         decision_tree = new DTAlgorithm(HealthHighDecision);
         
@@ -132,29 +159,34 @@ public class AI : MonoBehaviour
         list_power_pickups = new List<GameObject>();
         list_health_kits = new List<GameObject>();
 
-        foreach(GameObject obj in GameObject.FindGameObjectsWithTag("Enemy"))
-        {
-            if(this.gameObject != obj)
-            {
-                list_enemies.Add(obj);
-            }
-        }
+        enemy = null;
+        power_pickup = null;
+        health_kit = null;
 
-        enemy = list_enemies[0];
 
-        foreach (GameObject obj in GameObject.FindGameObjectsWithTag("Powerup"))
-        {
-            list_power_pickups.Add(obj);
-        }
+        //foreach(GameObject obj in agentScript.GetGameObjectsInView())
+        //{
+        //    if(this.gameObject != obj)
+        //    {
+        //        list_enemies.Add(obj);
+        //    }
+        //}
 
-        power_pickup = list_power_pickups[0];
+        //enemy = list_enemies[0];
 
-        foreach (GameObject obj in GameObject.FindGameObjectsWithTag("HealthKit"))
-        {
-            list_health_kits.Add(obj);
-        }
+        //foreach (GameObject obj in GameObject.FindGameObjectsWithTag("Powerup"))
+        //{
+        //    list_power_pickups.Add(obj);
+        //}
 
-        health_kit = list_health_kits[0];
+        //power_pickup = list_power_pickups[0];
+
+        //foreach (GameObject obj in GameObject.FindGameObjectsWithTag("HealthKit"))
+        //{
+        //    list_health_kits.Add(obj);
+        //}
+
+        //health_kit = list_health_kits[0];
 
 
     }
@@ -164,8 +196,13 @@ public class AI : MonoBehaviour
     {
         closestDistance = Mathf.Infinity;
 
+        list_enemies = agentScript.GetGameObjectsInViewOfTag(Constants.EnemyTag);
+        list_power_pickups = agentScript.GetGameObjectsInViewOfTag(Constants.PowerUpTag);
+        list_health_kits = agentScript.GetGameObjectsInViewOfTag(Constants.HealthKitTag);
+
         for (int i = 0; i < list_enemies.Count; i++)
         {
+
             if (list_enemies[i].GetComponent<AgentActions>().Alive && list_enemies[i] != null)
             {
                 if (Vector3.Distance(list_enemies[i].transform.position, this.gameObject.transform.position) < closestDistance)
@@ -231,6 +268,7 @@ public class AI : MonoBehaviour
             action_executor.SetNewAction(action);
             action_executor.Execute(agentScript, enemy, power_pickup, health_kit);
         }
+
 
 
 

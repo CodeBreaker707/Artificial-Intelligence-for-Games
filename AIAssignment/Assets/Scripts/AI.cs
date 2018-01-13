@@ -54,16 +54,6 @@ public class AI : MonoBehaviour
 
         DecisionNode inSightWithLessHealthDecision = new DecisionNode(sightDecision);
 
-       
-
-        //SequentialActions FleeAndMoveToHealth = new SequentialActions();
-        //FleeAndMoveToHealth.AddAction(FleeBattle);
-        //FleeAndMoveToHealth.AddAction(moveTowardsHealthKit);
-
-
-        // Decision OpponentAlive = new Decision(Decisions.IsOpponentAlive);
-        // DecisionNode isOpponentAliveDecision = new DecisionNode(OpponentAlive);
-
         
         DecisionNode inSightWithMoreHealthDecision = new DecisionNode(sightDecision);
 
@@ -90,9 +80,6 @@ public class AI : MonoBehaviour
         isHealthKitInSightDecision.AddTrueChild(MoveToHealthAction);
 
 
-        //isOpponentAliveDecision.AddFalseChild(randomWanderAction);
-        //isOpponentAliveDecision.AddTrueChild(inSightDecision);
-
         Decision PowerUpPickedDecision = new Decision(Decisions.IsPowerUpPicked);
         DecisionNode isPowerUpPickedDecision = new DecisionNode(PowerUpPickedDecision);
 
@@ -114,10 +101,6 @@ public class AI : MonoBehaviour
 
         isPickUpInSightDecision.AddFalseChild(randomWanderAction);
         isPickUpInSightDecision.AddTrueChild(moveToPPUAction);
-        ////isPickUpCloseDecision.AddTrueChild(isPowerUpPickedDecision);
-
-        ////isPowerUpPickedDecision.AddFalseChild(moveToPPUAction);
-        ////isPowerUpPickedDecision.AddTrueChild(randomWanderAction);
 
 
         Decision attackHigher = new Decision(Decisions.IsAttackPowerHigher);
@@ -139,14 +122,8 @@ public class AI : MonoBehaviour
         SingleAction attackEnemy = new SingleAction(Actions.AttackOpponent, 0.15f);
         ActionNode attackEnemyAction = new ActionNode(attackEnemy);
 
-        SequentialActions MoveAndAttack = new SequentialActions();
-        MoveAndAttack.AddAction(moveToAgent);
-        MoveAndAttack.AddAction(attackEnemy);
-        ActionNode MoveAndAttackAction = new ActionNode(MoveAndAttack);
-
-        inAttackRangeDecision.AddFalseChild(MoveAndAttackAction);
-        inAttackRangeDecision.AddTrueChild(MoveAndAttackAction);
-
+        inAttackRangeDecision.AddFalseChild(moveToAgentAction);
+        inAttackRangeDecision.AddTrueChild(attackEnemyAction);
         
 
         decision_tree = new DecisionTree(HealthHighDecision);

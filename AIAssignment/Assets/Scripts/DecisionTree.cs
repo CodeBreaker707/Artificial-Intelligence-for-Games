@@ -179,11 +179,6 @@ public class SingleAction : IAction
         {
             timer += Time.deltaTime;
 
-            if (agent.gameObject.name == "AIAgent1")
-            {
-                Debug.Log("Executing " + main_action.Method.Name + " by " + agent.gameObject.name + " in " + timer);
-            }
-
             if (timer >= delay)
             {
                 is_complete = main_action.Invoke(agent, enemy, powerPickup, healthKit);

@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-// This class stores all the decisions that the AI can make
+// This class contains all the decisions made by the AI GameObject
 class Decisions
 {
 
@@ -14,8 +14,8 @@ class Decisions
 
     public static bool IsAgentInSight(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
-        //return agent.IsInAttackRange(enemy);
-        if(agent.GetGameObjectsInViewOfTag(Constants.EnemyTag).Count > 0)
+
+        if (agent.GetGameObjectsInViewOfTag(Constants.EnemyTag).Count > 0)
         {
             return true;
         }
@@ -38,8 +38,8 @@ class Decisions
 
     public static bool IsPowerUpInSight(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
-        //return agent.IsInPickUpRange(powerPickup);
-        if(agent.GetGameObjectsInViewOfTag(Constants.PowerUpTag).Count > 0)
+
+        if (agent.GetGameObjectsInViewOfTag(Constants.PowerUpTag).Count > 0)
         {
             return true;
         }
@@ -52,7 +52,7 @@ class Decisions
 
     public static bool IsHealthKitInSight(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
-        if(agent.GetGameObjectsInViewOfTag(Constants.HealthKitTag).Count > 0)
+        if (agent.GetGameObjectsInViewOfTag(Constants.HealthKitTag).Count > 0)
         {
             return true;
         }
@@ -142,7 +142,7 @@ class Actions
 
 }
 
-public delegate bool MainAction(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit);
+public delegate bool Action(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit);
 
 
 public interface IAction
@@ -154,16 +154,17 @@ public interface IAction
 }
 
 
-public class Action : IAction
+public class SingleAction : IAction
 {
-    MainAction main_action;
+    Action main_action;
 
     private bool is_complete;
 
     private float delay;
     private float timer;
 
-    public Action(MainAction m_action, float time)
+
+    public SingleAction(Action m_action, float time)
     {
         main_action = m_action;
         delay = time;
@@ -171,14 +172,17 @@ public class Action : IAction
 
     }
 
-    
 
     public void Execute(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
-        if(!is_complete)
+        if (!is_complete)
         {
             timer += Time.deltaTime;
 
+            if (agent.gameObject.name == "AIAgent1")
+            {
+                Debug.Log("Executing " + main_action.Method.Name + " by " + agent.gameObject.name + " in " + timer);
+            }
 
             if (timer >= delay)
             {
@@ -203,38 +207,52 @@ public class Action : IAction
 
 public class SequentialActions : IAction
 {
-    List<Action> sequence = new List<Action>();
+    List<SingleAction> sequence = new List<SingleAction>();
 
-    public void AddAction(Action act)
+    int in_sequence = 0;
+
+    public void AddAction(SingleAction s_act)
     {
-        sequence.Add(act);
+        sequence.Add(s_act);
     }
 
     public void Execute(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
 
-        foreach (Action act in sequence)
+       
+        sequence[in_sequence].Execute(agent, enemy, powerPickup, healthKit);
+
+
+        if (sequence[in_sequence].IsComplete)
         {
-            act.Execute(agent, enemy, powerPickup, healthKit);
+
+            if(in_sequence + 1 < sequence.Count)
+            {
+                in_sequence++;
+            }
+
         }
+
 
     }
 
     public void Reset()
     {
-        foreach (Action act in sequence)
+        foreach (SingleAction act in sequence)
         {
             act.Reset();
         }
+
+        in_sequence = 0;
     }
 
     public bool IsComplete
     {
-       
-        get { return sequence[sequence.Count - 1].IsComplete; }
+
+        get { return sequence[in_sequence].IsComplete; }
     }
-        
-    
+
+
 
 }
 
@@ -356,7 +374,7 @@ public class ActionExecutor : MonoBehaviour
     }
 }
 
-class DTAlgorithm : MonoBehaviour
+class DecisionTree : MonoBehaviour
 {
 
     Node root_node;
@@ -364,7 +382,7 @@ class DTAlgorithm : MonoBehaviour
 
     IAction leaf_action;
 
-    public DTAlgorithm(Node root)
+    public DecisionTree(Node root)
     {
         root_node = root;
         current_node = root_node;
@@ -381,7 +399,7 @@ class DTAlgorithm : MonoBehaviour
 
     public void Traverse(Node cur_node, AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
-        if(cur_node.IsLeaf)
+        if (cur_node.IsLeaf)
         {
             leaf_action = cur_node.GetAction();
         }

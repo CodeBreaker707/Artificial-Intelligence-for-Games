@@ -26,7 +26,7 @@ public class AI : MonoBehaviour
 {
     //This is the script containing the AI agents actions
     //e.g.agentScript.MoveTo(enemy);
-    private DTAlgorithm decision_tree;
+    private DecisionTree decision_tree;
     private ActionExecutor action_executor;
 
     private float closestDistance = 100.0f;
@@ -73,17 +73,17 @@ public class AI : MonoBehaviour
         Decision isHealthKitInSight = new Decision(Decisions.IsHealthKitInSight);
         DecisionNode isHealthKitInSightDecision = new DecisionNode(isHealthKitInSight);
 
-        Action FleeBattle = new Action(Actions.FleeFromBattle, 0);
+        SingleAction FleeBattle = new SingleAction(Actions.FleeFromBattle, 0);
         ActionNode FleeBattleAction = new ActionNode(FleeBattle);
         
 
         inSightWithLessHealthDecision.AddFalseChild(isHealthKitInSightDecision);
         inSightWithLessHealthDecision.AddTrueChild(FleeBattleAction);
 
-        Action randomWander = new Action(Actions.RandomWander, 0);
+        SingleAction randomWander = new SingleAction(Actions.RandomWander, 0);
         ActionNode randomWanderAction = new ActionNode(randomWander);
 
-        Action moveTowardsHealthKit = new Action(Actions.MoveTowardsHealthKit, 0);
+        SingleAction moveTowardsHealthKit = new SingleAction(Actions.MoveTowardsHealthKit, 0);
         ActionNode MoveToHealthAction = new ActionNode(moveTowardsHealthKit);
 
         isHealthKitInSightDecision.AddFalseChild(randomWanderAction);
@@ -109,7 +109,7 @@ public class AI : MonoBehaviour
         isPowerUpPickedDecision.AddFalseChild(isPickUpInSightDecision);
         isPowerUpPickedDecision.AddTrueChild(randomWanderAction);
 
-        Action moveToPPU = new Action(Actions.MoveTowardsPickup, 0);
+        SingleAction moveToPPU = new SingleAction(Actions.MoveTowardsPickup, 0);
         ActionNode moveToPPUAction = new ActionNode(moveToPPU);
 
         isPickUpInSightDecision.AddFalseChild(randomWanderAction);
@@ -132,19 +132,24 @@ public class AI : MonoBehaviour
         attackHigherDecision.AddFalseChild(FleeBattleAction);
         attackHigherDecision.AddTrueChild(inAttackRangeDecision);
 
-        Action moveToAgent = new Action(Actions.MoveTowardsAgent, 0);
+        SingleAction moveToAgent = new SingleAction(Actions.MoveTowardsAgent, 0);
         ActionNode moveToAgentAction = new ActionNode(moveToAgent);
 
-        //SequentialActions MoveAndAttack = new SequentialActions();
-        //MoveAndAttack.AddAction(moveTo);
-        //MoveAndAttack.AddAction(attackEnemy);
-        Action attackEnemy = new Action(Actions.AttackOpponent, 0.15f);
+        
+        SingleAction attackEnemy = new SingleAction(Actions.AttackOpponent, 0.15f);
         ActionNode attackEnemyAction = new ActionNode(attackEnemy);
 
-        inAttackRangeDecision.AddFalseChild(moveToAgentAction);
-        inAttackRangeDecision.AddTrueChild(attackEnemyAction);
+        SequentialActions MoveAndAttack = new SequentialActions();
+        MoveAndAttack.AddAction(moveToAgent);
+        MoveAndAttack.AddAction(attackEnemy);
+        ActionNode MoveAndAttackAction = new ActionNode(MoveAndAttack);
 
-        decision_tree = new DTAlgorithm(HealthHighDecision);
+        inAttackRangeDecision.AddFalseChild(MoveAndAttackAction);
+        inAttackRangeDecision.AddTrueChild(MoveAndAttackAction);
+
+        
+
+        decision_tree = new DecisionTree(HealthHighDecision);
         
         action_executor = new ActionExecutor(randomWander);
 
@@ -161,32 +166,7 @@ public class AI : MonoBehaviour
 
         enemy = null;
         power_pickup = null;
-        health_kit = null;
-
-
-        //foreach(GameObject obj in agentScript.GetGameObjectsInView())
-        //{
-        //    if(this.gameObject != obj)
-        //    {
-        //        list_enemies.Add(obj);
-        //    }
-        //}
-
-        //enemy = list_enemies[0];
-
-        //foreach (GameObject obj in GameObject.FindGameObjectsWithTag("Powerup"))
-        //{
-        //    list_power_pickups.Add(obj);
-        //}
-
-        //power_pickup = list_power_pickups[0];
-
-        //foreach (GameObject obj in GameObject.FindGameObjectsWithTag("HealthKit"))
-        //{
-        //    list_health_kits.Add(obj);
-        //}
-
-        //health_kit = list_health_kits[0];
+        health_kit = null;       
 
 
     }
@@ -195,6 +175,10 @@ public class AI : MonoBehaviour
     void Update()
     {
         closestDistance = Mathf.Infinity;
+
+        enemy = null;
+        power_pickup = null;
+        health_kit = null;
 
         list_enemies = agentScript.GetGameObjectsInViewOfTag(Constants.EnemyTag);
         list_power_pickups = agentScript.GetGameObjectsInViewOfTag(Constants.PowerUpTag);
@@ -263,7 +247,7 @@ public class AI : MonoBehaviour
         //use this update to execute your AI algorithm
         if (agentScript.Alive)
         {
-            IAction action = decision_tree.Execute(agentScript, enemy, power_pickup, health_kit);
+            IAction action = decision_tree.Execute(agentScript, enemy, power_pickup, health_kit); 
 
             action_executor.SetNewAction(action);
             action_executor.Execute(agentScript, enemy, power_pickup, health_kit);

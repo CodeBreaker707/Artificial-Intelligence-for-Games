@@ -18,7 +18,6 @@ public class AgentActions : MonoBehaviour
     public const float AttackRange = 1.0f;
     public const int NormalAttackDamage = 10;
     public const float HitProbability = 0.5f;
-    public const float PickUpRange = 2.0f;
 
     // How far will the random wander go
     private const int RandomWanderDistance = 200;
@@ -207,21 +206,6 @@ public class AgentActions : MonoBehaviour
         return false;
     }
 
-    public bool IsInPickUpRange(GameObject powerPickUp)
-    {
-        if (powerPickUp != null)
-        {
-            if (Vector3.Distance(transform.position, powerPickUp.transform.position) < PickUpRange)
-            {
-                return true;
-            }
-    
-       }
-
-        return false;
-
-    }
-
     // Attack the enemy
     public void AttackEnemy(GameObject enemy)
     {
@@ -287,29 +271,25 @@ public class AgentActions : MonoBehaviour
 
     // Run away, run away
     public void Flee(GameObject enemy)
-    {
-
-        if (Vector3.Distance(this.transform.position, enemy.transform.position) > 3)
-        {
-            Fleeing = false;
-        }
-        else
+    {      
+        
+        if(Fleeing == false)
         {
             Fleeing = true;
 
-            // Turn away from the threat
-            transform.rotation = Quaternion.LookRotation(transform.position - enemy.transform.position);
-            Vector3 runTo = transform.position + transform.forward * _agent.speed;
+        }            
 
-            //So now we've got a Vector3 to run to and we can transfer that to a location on the NavMesh with samplePosition.
-            // stores the output in a variable called hit
-            UnityEngine.AI.NavMeshHit navHit;
+        // Turn away from the threat
+        transform.rotation = Quaternion.LookRotation(transform.position - enemy.transform.position);
+        Vector3 runTo = transform.position + transform.forward * _agent.speed;
 
-            // Check for a point to flee to
-            UnityEngine.AI.NavMesh.SamplePosition(runTo, out navHit, FleeDistance, 1 << UnityEngine.AI.NavMesh.GetAreaFromName("Walkable"));
-            _agent.SetDestination(navHit.position);
-        }
+        //So now we've got a Vector3 to run to and we can transfer that to a location on the NavMesh with samplePosition.
+        // stores the output in a variable called hit
+        UnityEngine.AI.NavMeshHit navHit;
 
+        // Check for a point to flee to
+        UnityEngine.AI.NavMesh.SamplePosition(runTo, out navHit, FleeDistance, 1 << UnityEngine.AI.NavMesh.GetAreaFromName("Walkable"));
+        _agent.SetDestination(navHit.position);
 
 
     }
@@ -328,11 +308,6 @@ public class AgentActions : MonoBehaviour
             return false;
         }
     }
-
-    //public bool IsItSeen(String seen_tag)
-    //{
-    //    if (seen_objects.)
-    //}
 
     // Get a percieved object, null if object is not in view
     public GameObject GetObjectInView(String name)

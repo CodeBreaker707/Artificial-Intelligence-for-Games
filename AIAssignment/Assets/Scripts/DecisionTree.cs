@@ -3,18 +3,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-// This class contains all the decisions made by the AI GameObject
+// This class contains all the decisions made
+// by the AI GameObject
 class Decisions
 {
 
-    public static bool IsOpponentAlive(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
-    {
-        return enemy.GetComponent<AgentActions>().Alive;
-    }
+    //******************************************************************************************************************//
 
     public static bool IsAgentInSight(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
-
+        // If the game objects of Enemy Tag are within sight, the count of
+        // the returned list will be greater than zero
         if (agent.GetGameObjectsInViewOfTag(Constants.EnemyTag).Count > 0)
         {
             return true;
@@ -26,15 +25,21 @@ class Decisions
 
     }
 
+    //******************************************************************************************************************//
+
     public static bool IsInAttackDistance(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
         return agent.IsInAttackRange(enemy);
     }
 
+    //******************************************************************************************************************//
+
     public static bool IsOpponentFleeing(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
         return enemy.GetComponent<AgentActions>().Fleeing;
     }
+
+    //******************************************************************************************************************//
 
     public static bool IsPowerUpInSight(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
@@ -50,6 +55,8 @@ class Decisions
 
     }
 
+    //******************************************************************************************************************//
+
     public static bool IsHealthKitInSight(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
         if (agent.GetGameObjectsInViewOfTag(Constants.HealthKitTag).Count > 0)
@@ -63,10 +70,14 @@ class Decisions
 
     }
 
+    //******************************************************************************************************************//
+
     public static bool IsPowerUpPicked(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
         return agent.HasPowerUp;
     }
+
+    //******************************************************************************************************************//
 
     public static bool IsAttackPowerHigher(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
@@ -81,8 +92,12 @@ class Decisions
 
     }
 
+    //******************************************************************************************************************//
+
     public static bool IsHealthHigherThan25Percent(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
+        // If the agent's health is greater than 25% of its maximum
+        //health, this function will return true
         if (agent.CurrentHitPoints > 0.25 * agent.MaxHitPoints)
         {
             return true;
@@ -93,16 +108,20 @@ class Decisions
         }
     }
 
-
+    //******************************************************************************************************************//
 
 }
 
+// A reference pointer to the decision functions
+// declared in the Decisions class
 public delegate bool Decision(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit);
 
-// Here are all the actions we can take
-// All actions return true once they have completed, false otherwise
+// This class contains all the actions performed
+// by the AI GameObject
 class Actions
 {
+
+    //******************************************************************************************************************//
 
     public static bool MoveTowardsPickup(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
@@ -110,11 +129,15 @@ class Actions
         return true;
     }
 
+    //******************************************************************************************************************//
+
     public static bool MoveTowardsHealthKit(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
         agent.MoveTo(healthKit);
         return true;
     }
+
+    //******************************************************************************************************************//
 
     public static bool RandomWander(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
@@ -122,11 +145,15 @@ class Actions
         return true;
     }
 
+    //******************************************************************************************************************//
+
     public static bool MoveTowardsAgent(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
         agent.MoveTo(enemy);
         return true;
     }
+
+    //******************************************************************************************************************//
 
     public static bool AttackOpponent(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
@@ -134,33 +161,49 @@ class Actions
         return true;
     }
 
+    //******************************************************************************************************************//
+
     public static bool FleeFromBattle(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
         agent.Flee(enemy);
         return true;
     }
 
+    //******************************************************************************************************************//
+
 }
 
+// A reference pointer to the action functions
+// declared in the Actions class
 public delegate bool Action(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit);
 
-
+// An interface to contain all
+// the details of the action
 public interface IAction
 {
     bool IsComplete { get; }
 
+    // Function to execute the action
     void Execute(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit);
+
+    // Function to reset values
     void Reset();
 }
 
 
 public class SingleAction : IAction
 {
+    // Declaring the reference pointer
     Action main_action;
 
     private bool is_complete;
 
+    // Stores the delayed time
+    // after which the action will
+    // be executed
     private float delay;
+
+    // Elapsed time
     private float timer;
 
 
@@ -177,8 +220,11 @@ public class SingleAction : IAction
     {
         if (!is_complete)
         {
+            // Timer increases with delta time
             timer += Time.deltaTime;
 
+            // If timer execeeds the delay in execution,
+            // then execute the action
             if (timer >= delay)
             {
                 is_complete = main_action.Invoke(agent, enemy, powerPickup, healthKit);
@@ -202,9 +248,12 @@ public class SingleAction : IAction
 
 public class SequentialActions : IAction
 {
+    // To store a list of actions
     List<SingleAction> sequence = new List<SingleAction>();
 
-    int in_sequence = 0;
+    // To access the actions in
+    // the sequence list
+    int slot = 0;
 
     public void AddAction(SingleAction s_act)
     {
@@ -215,15 +264,15 @@ public class SequentialActions : IAction
     {
 
        
-        sequence[in_sequence].Execute(agent, enemy, powerPickup, healthKit);
+        sequence[slot].Execute(agent, enemy, powerPickup, healthKit);
 
 
-        if (sequence[in_sequence].IsComplete)
+        if (sequence[slot].IsComplete)
         {
 
-            if(in_sequence + 1 < sequence.Count)
+            if(slot + 1 < sequence.Count)
             {
-                in_sequence++;
+                slot++;
             }
 
         }
@@ -238,13 +287,13 @@ public class SequentialActions : IAction
             act.Reset();
         }
 
-        in_sequence = 0;
+        slot = 0;
     }
 
     public bool IsComplete
     {
 
-        get { return sequence[in_sequence].IsComplete; }
+        get { return sequence[slot].IsComplete; }
     }
 
 

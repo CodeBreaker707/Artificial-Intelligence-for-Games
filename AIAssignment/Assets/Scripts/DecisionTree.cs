@@ -10,7 +10,7 @@ class Decisions
 
     //******************************************************************************************************************//
 
-    public static bool IsAgentInSight(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
+    public static bool IsOpponentInSight(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
         // If the game objects of Enemy Tag are within sight, the count of
         // the returned list will be greater than zero
@@ -116,6 +116,7 @@ class Decisions
 // declared in the Decisions class
 public delegate bool Decision(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit);
 
+
 // This class contains all the actions performed
 // by the AI GameObject
 class Actions
@@ -123,7 +124,7 @@ class Actions
 
     //******************************************************************************************************************//
 
-    public static bool MoveTowardsPickup(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
+    public static bool MoveTowardsPowerUp(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
         agent.MoveTo(powerPickup);
         return true;
@@ -139,19 +140,19 @@ class Actions
 
     //******************************************************************************************************************//
 
-    public static bool RandomWander(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
+    public static bool MoveTowardsOpponent(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
-        agent.RandomWander();
+        agent.MoveTo(enemy);
         return true;
     }
 
     //******************************************************************************************************************//
 
-    public static bool MoveTowardsAgent(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
+    public static bool RandomWander(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
-        agent.MoveTo(enemy);
+        agent.RandomWander();
         return true;
-    }
+    }    
 
     //******************************************************************************************************************//
 
@@ -263,14 +264,15 @@ public class SequentialActions : IAction
     public void Execute(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
 
-       
+
         sequence[slot].Execute(agent, enemy, powerPickup, healthKit);
 
 
         if (sequence[slot].IsComplete)
         {
-
-            if(slot + 1 < sequence.Count)
+            // This check is to make sure we
+            // don't go out of array bounds
+            if (slot + 1 < sequence.Count)
             {
                 slot++;
             }
@@ -282,6 +284,7 @@ public class SequentialActions : IAction
 
     public void Reset()
     {
+        // Resets for every action in the sequence
         foreach (SingleAction act in sequence)
         {
             act.Reset();
@@ -290,9 +293,11 @@ public class SequentialActions : IAction
         slot = 0;
     }
 
+
     public bool IsComplete
     {
-
+        // Returns the boolean for the action in that
+        // slot
         get { return sequence[slot].IsComplete; }
     }
 
@@ -300,8 +305,13 @@ public class SequentialActions : IAction
 
 }
 
+// This class represents a point/junction
+// used in the decision tree 
 abstract class Node
 {
+    // It's called leaf because no other node can branch
+    // from it
+    // i.e. Leaf Node = Action Node
     private bool is_Leaf;
 
     public bool IsLeaf
@@ -310,30 +320,37 @@ abstract class Node
         set { is_Leaf = value; }
     }
 
+    // A node can either make a decision or arrive
+    // at an action. Thus, these methods are declared
     public abstract Node MakeDecision(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit);
     public abstract IAction GetAction();
 
 }
 
 
-
+// A class responsible for making decisions
+// in the decision tree
 class DecisionNode : Node
 {
+    // If the decision is postive, we use this child
     Node true_child;
+    // Otherwise,
     Node false_child;
 
-    Decision current_decision;
+    // Declaring the reference pointer
+    Decision m_decision;
 
-    public DecisionNode(Decision cur_dec)
+    public DecisionNode(Decision decision)
     {
         IsLeaf = false;
 
         true_child = null;
         false_child = null;
 
-        current_decision = cur_dec;
+        m_decision = decision;
     }
 
+    // Child Nodes are added
     public void AddTrueChild(Node child)
     {
         true_child = child;
@@ -346,7 +363,9 @@ class DecisionNode : Node
 
     public override Node MakeDecision(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
-        if (current_decision.Invoke(agent, enemy, powerPickup, healthKit) == true)
+        // The reference pointer will now call the function it was assigned to
+        // and return a boolean of either true or false
+        if (m_decision.Invoke(agent, enemy, powerPickup, healthKit) == true)
         {
             return true_child;
         }
@@ -356,6 +375,8 @@ class DecisionNode : Node
         }
     }
 
+    // This node doesn't bother about actions, so
+    // we do nothing with it
     public override IAction GetAction()
     {
         return null;
@@ -363,65 +384,81 @@ class DecisionNode : Node
 
 }
 
+// A class responsible for returning the leaf action
+// from the decision tree
 class ActionNode : Node
 {
-    IAction current_action;
+    // Declaring the action assigned to
+    // this node
+    IAction m_action;
 
-    public ActionNode(IAction cur_action)
+    public ActionNode(IAction action)
     {
         IsLeaf = true;
 
-        current_action = cur_action;
+        m_action = action;
 
     }
 
+    // This class doesn't bother about decisions, so
+    // we do nothing with it
     public override Node MakeDecision(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
         return null;
     }
 
+
     public override IAction GetAction()
     {
-        return current_action;
+        return m_action;
     }
+
 }
 
+// A class to execute the leaf action
 public class ActionExecutor : MonoBehaviour
 {
-    IAction executing_action;
+
+    IAction current_action;
 
     public ActionExecutor(IAction default_action)
     {
-        executing_action = default_action;
+        current_action = default_action;
     }
 
 
     public void SetNewAction(IAction new_action)
     {
-        if (executing_action.IsComplete)
+        // If the current action is complete and it's not
+        // the same as the new action, then
+        // the new action becomes the current action
+        if (current_action.IsComplete)
         {
-            if (new_action != executing_action)
+            if (new_action != current_action)
             {
-                executing_action = new_action;
+                current_action = new_action;
             }
 
-            executing_action.Reset();
+            current_action.Reset();
         }
 
     }
 
+    // Current action gets executed
     public void Execute(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
-
-        executing_action.Execute(agent, enemy, powerPickup, healthKit);
+        current_action.Execute(agent, enemy, powerPickup, healthKit);
 
     }
 }
 
+// The class comprising the decision tree algorithm
 class DecisionTree : MonoBehaviour
 {
-
+    // A node from where the tree will begin
+    // its traversal
     Node root_node;
+
     Node current_node;
 
     IAction leaf_action;
@@ -435,6 +472,7 @@ class DecisionTree : MonoBehaviour
 
     }
 
+    // The tree will begin its traversal from here
     public IAction Execute(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
         Traverse(root_node, agent, enemy, powerPickup, healthKit);
@@ -443,6 +481,8 @@ class DecisionTree : MonoBehaviour
 
     public void Traverse(Node cur_node, AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
+        // If the current node is not an action node, then make a
+        // decision
         if (cur_node.IsLeaf)
         {
             leaf_action = cur_node.GetAction();
@@ -450,8 +490,12 @@ class DecisionTree : MonoBehaviour
         else
         {
             current_node = cur_node.MakeDecision(agent, enemy, powerPickup, healthKit);
+
+            // The function is called from within the function itself almost
+            // like a loop until it arrives at an action node
             Traverse(current_node, agent, enemy, powerPickup, healthKit);
         }
+
     }
 
 

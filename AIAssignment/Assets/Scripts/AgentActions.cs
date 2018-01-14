@@ -32,18 +32,12 @@ public class AgentActions : MonoBehaviour
         set { _alive = value; }
     }
 
+    // Are we fleeing
     private bool _fleeing = false;
     public bool Fleeing
     {
         get { return _fleeing; }
         set { _fleeing = value; }
-    }
-
-    private float _fleeTimer = 1.0f;
-    public float FleeTimer
-    {
-        get { return _fleeTimer; }
-        set { _fleeTimer = value; }
     }
 
     // Do we have a powerup
@@ -74,22 +68,23 @@ public class AgentActions : MonoBehaviour
 
     // Our navigation agent
     private UnityEngine.AI.NavMeshAgent _agent;
-    public GameObject enemy;
 
     // Check for collisions with everything when checking for a random location for the wander function
     private const int AgentLayerMask = -1;
 
     // Control how often we set a new random destination
     private const int RandomWanderUpdateInterval = 50;
-    private int _tickToNextRandomUpdate = 0;
+    private int _tickToNextRandomUpdate = 0; 
 
     // Keep track of game objects in our visual field
-    private Dictionary<String, GameObject> ObjectsPercieved = new Dictionary<String, GameObject>();
-
     private List<GameObject> seen_objects;
+
+
+    //private Dictionary<String, GameObject> ObjectsPercieved = new Dictionary<String, GameObject>();
 
     // The inventory
     //private Dictionary<String, GameObject> Inventory = new Dictionary<string, GameObject>();
+
 
     // Use this for initialization
     void Start()
@@ -102,18 +97,8 @@ public class AgentActions : MonoBehaviour
 
     }
 
-    public void AddToPercievedObjectsList(GameObject seenObject)
-    {
-        //Debug.Log(this.name + " seen " + seenObject.name);
-        // We can see the object, add it to the list of game objects we know about, unless it's already in the list
-        if (!ObjectsPercieved.ContainsKey(seenObject.gameObject.name))
-        {
-            ObjectsPercieved.Add(seenObject.gameObject.name, seenObject.gameObject);
-        }
-
-
-    }
-
+    // If we can see the object, add it to the list of game objects 
+    // we know about, unless it's already in the list
     public void AddToSeenObjects(GameObject seen_obj)
     {
         if(!seen_objects.Contains(seen_obj))
@@ -123,16 +108,8 @@ public class AgentActions : MonoBehaviour
 
     }
 
-    public void RemoveFromPercievedObjectList(GameObject unseenObject)
-    {
-        // add it to the list of objects we can currently percieve
-        if (ObjectsPercieved.ContainsKey(unseenObject.gameObject.name))
-        {
-            ObjectsPercieved.Remove(unseenObject.gameObject.name);
-        }
-
-    }
-
+    // If we can't see the object, remove it from the list of game objects
+    // we know about if it contains in the list
     public void RemoveFromSeenObjects(GameObject unseen_obj)
     {
         if(seen_objects.Contains(unseen_obj))
@@ -147,14 +124,8 @@ public class AgentActions : MonoBehaviour
     {
         if (Fleeing == true)
         {
-            //_agent.destination = target.transform.position;
             Fleeing = false;
         }
-
-        //if (_agent.transform.position == target.transform.position)
-        //{
-        //    Fleeing = false;
-        //}
 
         _agent.destination = target.transform.position;
 
@@ -295,44 +266,32 @@ public class AgentActions : MonoBehaviour
     }
 
     // Check if something of interest is in range
-    public bool IsObjectInView(String name)
-    {
-        // If we can perceive it return it, otherwise return null
-        GameObject objectPercieved;
-        if (ObjectsPercieved.TryGetValue(name, out objectPercieved))
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    // Get a percieved object, null if object is not in view
-    public GameObject GetObjectInView(String name)
-    {
-        // If we can perceive it return it, otherwise return null
-        GameObject objectPercieved;
-        if (ObjectsPercieved.TryGetValue(name, out objectPercieved))
-        {
-            return objectPercieved;
-        }
-        else
-        {
-            return null;
-        }
-    }
+    //public bool IsObjectInView(String name)
+    //{
+    //    // If we can perceive it return it, otherwise return null
+    //    GameObject objectPercieved;
+    //    if (ObjectsPercieved.TryGetValue(name, out objectPercieved))
+    //    {
+    //        return true;
+    //    }
+    //    else
+    //    {
+    //        return false;
+    //    }
+    //}
 
 
     public List<GameObject> GetGameObjectsInViewOfTag(String seen_tag)
     {
+        // Creating a temporary list
         List<GameObject> temp_list;
 
         temp_list = new List<GameObject>();
 
         foreach (GameObject obj in seen_objects)
         {
+            // If the tag from the parameter matches the tag
+            // in the seen objects, add it to the temporary list
             if(obj.tag == seen_tag)
             {
                 temp_list.Add(obj);

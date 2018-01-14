@@ -320,7 +320,6 @@ MonoBehaviour:
   _alive: 1
   StartPosition: {x: 0, y: 0, z: 0}
   _currentHitPoints: 0
-  enemy: {fileID: 0}
 --- !u!23 &482230254
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1026,7 +1025,6 @@ MonoBehaviour:
   _alive: 1
   StartPosition: {x: 0, y: 0, z: 0}
   _currentHitPoints: 0
-  enemy: {fileID: 0}
 --- !u!23 &1177640382
 MeshRenderer:
   m_ObjectHideFlags: 0

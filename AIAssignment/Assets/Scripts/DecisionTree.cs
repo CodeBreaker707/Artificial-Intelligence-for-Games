@@ -416,7 +416,7 @@ class ActionNode : Node
 }
 
 // A class to execute the leaf action
-public class ActionExecutor : MonoBehaviour
+public class ActionExecutor
 {
 
     IAction current_action;
@@ -453,7 +453,7 @@ public class ActionExecutor : MonoBehaviour
 }
 
 // The class comprising the decision tree algorithm
-class DecisionTree : MonoBehaviour
+class DecisionTree
 {
     // A node from where the tree will begin
     // its traversal

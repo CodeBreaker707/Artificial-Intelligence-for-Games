@@ -9,10 +9,12 @@ class Decisions
 {
 
     //******************************************************************************************************************//
+    //******************************************************************************************************************//
 
+    // A decision to check if an opponent is in agent's sight
     public static bool IsOpponentInSight(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
-        // If the game objects of Enemy Tag are within sight, the count of
+        // If the game objects of Enemy tag are within sight, the count of
         // the returned list will be greater than zero
         if (agent.GetGameObjectsInViewOfTag(Constants.EnemyTag).Count > 0)
         {
@@ -26,24 +28,32 @@ class Decisions
     }
 
     //******************************************************************************************************************//
+    //******************************************************************************************************************//
 
+    // A decision to check if the agents are
+    // close enough to each other
     public static bool IsInAttackDistance(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
         return agent.IsInAttackRange(enemy);
     }
 
     //******************************************************************************************************************//
+    //******************************************************************************************************************//
 
+    // A decision to check if the agent's opponent is fleeing
     public static bool IsOpponentFleeing(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
         return enemy.GetComponent<AgentActions>().Fleeing;
     }
 
     //******************************************************************************************************************//
+    //******************************************************************************************************************//
 
+    // A decision to check if a power pickup is in agent's sight
     public static bool IsPowerUpInSight(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
-
+        // If the game objects of PowerUp tag are in sight, the count
+        // of the returned list will be greater than zero
         if (agent.GetGameObjectsInViewOfTag(Constants.PowerUpTag).Count > 0)
         {
             return true;
@@ -56,9 +66,13 @@ class Decisions
     }
 
     //******************************************************************************************************************//
+    //******************************************************************************************************************//
 
+    // A decision to check if a health kit is in agent's sight
     public static bool IsHealthKitInSight(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
+        // If the game objects of HealthKit tag are in sight, the count
+        // of the returned list will be greater than zero
         if (agent.GetGameObjectsInViewOfTag(Constants.HealthKitTag).Count > 0)
         {
             return true;
@@ -71,14 +85,20 @@ class Decisions
     }
 
     //******************************************************************************************************************//
+    //******************************************************************************************************************//
 
+    // A decision to check if agent has already
+    // picked up a power pickup
     public static bool IsPowerUpPicked(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
         return agent.HasPowerUp;
     }
 
     //******************************************************************************************************************//
+    //******************************************************************************************************************//
 
+    // A decision to check if the agent's attack power is equal to
+    // or greater than the opponent's attack power
     public static bool IsAttackPowerHigher(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
         if (agent.PowerUp >= enemy.GetComponent<AgentActions>().PowerUp)
@@ -92,6 +112,7 @@ class Decisions
 
     }
 
+    //******************************************************************************************************************//
     //******************************************************************************************************************//
 
     public static bool IsHealthHigherThan25Percent(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
@@ -109,6 +130,7 @@ class Decisions
     }
 
     //******************************************************************************************************************//
+    //******************************************************************************************************************//
 
 }
 
@@ -123,7 +145,10 @@ class Actions
 {
 
     //******************************************************************************************************************//
+    //******************************************************************************************************************//
 
+    // An action to make the agent move towards a
+    // power pickup if it's in sight
     public static bool MoveTowardsPowerUp(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
         agent.MoveTo(powerPickup);
@@ -131,7 +156,10 @@ class Actions
     }
 
     //******************************************************************************************************************//
+    //******************************************************************************************************************//
 
+    // An action to make the agent move towards a
+    // health kit if it's in sight
     public static bool MoveTowardsHealthKit(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
         agent.MoveTo(healthKit);
@@ -139,7 +167,10 @@ class Actions
     }
 
     //******************************************************************************************************************//
+    //******************************************************************************************************************//
 
+    // An action to make the agent move towards its
+    // opponent if it's in sight
     public static bool MoveTowardsOpponent(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
         agent.MoveTo(enemy);
@@ -147,15 +178,19 @@ class Actions
     }
 
     //******************************************************************************************************************//
+    //******************************************************************************************************************//
 
+    // An action to make the agent randomly wander the level
     public static bool RandomWander(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
         agent.RandomWander();
         return true;
-    }    
+    }
 
     //******************************************************************************************************************//
+    //******************************************************************************************************************//
 
+    // An action to make the agent attack its opponent
     public static bool AttackOpponent(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
         agent.AttackEnemy(enemy);
@@ -163,13 +198,17 @@ class Actions
     }
 
     //******************************************************************************************************************//
+    //******************************************************************************************************************//
 
-    public static bool FleeFromBattle(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
+    // An action to make the agent flee from its
+    // opponent
+    public static bool FleeFromOpponent(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
         agent.Flee(enemy);
         return true;
     }
 
+    //******************************************************************************************************************//
     //******************************************************************************************************************//
 
 }
@@ -188,7 +227,7 @@ public interface IAction
     void Execute(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit);
 
     // Function to reset values
-    void Reset();
+    void ResetValues();
 }
 
 
@@ -207,7 +246,8 @@ public class SingleAction : IAction
     // Elapsed time
     private float timer;
 
-
+    // Constructor to intialise default values
+    // and which action to execute
     public SingleAction(Action m_action, float time)
     {
         main_action = m_action;
@@ -228,13 +268,14 @@ public class SingleAction : IAction
             // then execute the action
             if (timer >= delay)
             {
+
                 is_complete = main_action.Invoke(agent, enemy, powerPickup, healthKit);
             }
 
         }
     }
 
-    public void Reset()
+    public void ResetValues()
     {
         is_complete = false;
         timer = 0.0f;
@@ -256,6 +297,7 @@ public class SequentialActions : IAction
     // the sequence list
     int slot = 0;
 
+    // A function to add actions into the sequence
     public void AddAction(SingleAction s_act)
     {
         sequence.Add(s_act);
@@ -282,12 +324,12 @@ public class SequentialActions : IAction
 
     }
 
-    public void Reset()
+    public void ResetValues()
     {
         // Resets for every action in the sequence
-        foreach (SingleAction act in sequence)
+        foreach (SingleAction s_act in sequence)
         {
-            act.Reset();
+            s_act.ResetValues();
         }
 
         slot = 0;
@@ -418,7 +460,7 @@ class ActionNode : Node
 // A class to execute the leaf action
 public class ActionExecutor
 {
-
+    // The action that will get executed
     IAction current_action;
 
     public ActionExecutor(IAction default_action)
@@ -439,7 +481,7 @@ public class ActionExecutor
                 current_action = new_action;
             }
 
-            current_action.Reset();
+            current_action.ResetValues();
         }
 
     }

@@ -59,8 +59,10 @@ public class AI : MonoBehaviour
         agentScript = this.gameObject.GetComponent<AgentActions>();
 
         //******************************************************************************************************************//
+        //******************************************************************************************************************//
 
         // Declaring a decision and assigning it to a decision node
+        // This process is repeated for the following decisions as well
         Decision health_high = new Decision(Decisions.IsHealthHigherThan25Percent);
         DecisionNode health_high_decision = new DecisionNode(health_high);
 
@@ -78,19 +80,22 @@ public class AI : MonoBehaviour
         health_high_decision.AddTrueChild(in_sight_with_more_health_decision);
 
         //******************************************************************************************************************//
+        //******************************************************************************************************************//
 
         Decision is_health_kit_in_sight = new Decision(Decisions.IsHealthKitInSight);
         DecisionNode is_health_kit_in_sight_decision = new DecisionNode(is_health_kit_in_sight);
 
         // An action is created and assigned to an action node
-        SingleAction flee_battle = new SingleAction(Actions.FleeFromBattle, 0);
-        ActionNode flee_battle_action = new ActionNode(flee_battle);
+        // This process is repeated for the following actions as well
+        SingleAction flee_from_opponent = new SingleAction(Actions.FleeFromOpponent, 0);
+        ActionNode flee_from_opponent_action = new ActionNode(flee_from_opponent);
 
         // If our health is less and agent is in sight, flee. 
         // Else, look for health kit
         in_sight_with_less_health_decision.AddFalseChild(is_health_kit_in_sight_decision);
-        in_sight_with_less_health_decision.AddTrueChild(flee_battle_action);
+        in_sight_with_less_health_decision.AddTrueChild(flee_from_opponent_action);
 
+        //******************************************************************************************************************//
         //******************************************************************************************************************//
 
         SingleAction random_wander = new SingleAction(Actions.RandomWander, 0);
@@ -103,6 +108,7 @@ public class AI : MonoBehaviour
         is_health_kit_in_sight_decision.AddFalseChild(random_wander_action);
         is_health_kit_in_sight_decision.AddTrueChild(move_towards_health_kit_action);
 
+        //******************************************************************************************************************//
         //******************************************************************************************************************//
 
         Decision is_power_up_picked = new Decision(Decisions.IsPowerUpPicked);
@@ -117,6 +123,7 @@ public class AI : MonoBehaviour
         in_sight_with_more_health_decision.AddTrueChild(is_opponent_fleeing_decision);
 
         //******************************************************************************************************************//
+        //******************************************************************************************************************//
 
         Decision is_power_up_in_sight = new Decision(Decisions.IsPowerUpInSight);
         DecisionNode is_power_up_in_sight_decision = new DecisionNode(is_power_up_in_sight);
@@ -125,6 +132,7 @@ public class AI : MonoBehaviour
         is_power_up_picked_decision.AddFalseChild(is_power_up_in_sight_decision);
         is_power_up_picked_decision.AddTrueChild(random_wander_action);
 
+        //******************************************************************************************************************//
         //******************************************************************************************************************//
 
         SingleAction move_towards_power_up = new SingleAction(Actions.MoveTowardsPowerUp, 0);
@@ -135,6 +143,7 @@ public class AI : MonoBehaviour
         is_power_up_in_sight_decision.AddTrueChild(move_towards_power_up_action);
 
         //******************************************************************************************************************//
+        //******************************************************************************************************************//
 
         Decision is_attack_power_higher = new Decision(Decisions.IsAttackPowerHigher);
         DecisionNode is_attack_power_higher_decision = new DecisionNode(is_attack_power_higher);
@@ -144,15 +153,17 @@ public class AI : MonoBehaviour
         is_opponent_fleeing_decision.AddTrueChild(random_wander_action);
 
         //******************************************************************************************************************//
+        //******************************************************************************************************************//
 
         Decision is_in_attack_distance = new Decision(Decisions.IsInAttackDistance);
         DecisionNode is_in_attack_distance_decision = new DecisionNode(is_in_attack_distance);
 
         // If our attack power is equal or higher than the opponent, check if we're in attack range.
         // Else, flee from sight
-        is_attack_power_higher_decision.AddFalseChild(flee_battle_action);
+        is_attack_power_higher_decision.AddFalseChild(flee_from_opponent_action);
         is_attack_power_higher_decision.AddTrueChild(is_in_attack_distance_decision);
 
+        //******************************************************************************************************************//
         //******************************************************************************************************************//
 
         SingleAction move_towards_agent = new SingleAction(Actions.MoveTowardsOpponent, 0);
@@ -167,9 +178,12 @@ public class AI : MonoBehaviour
         is_in_attack_distance_decision.AddTrueChild(attack_opponent_action);
 
         //******************************************************************************************************************//
+        //******************************************************************************************************************//
 
+        // Assigning the root node with the health check decision
         decision_tree = new DecisionTree(health_high_decision);
 
+        // Assigning random wander as the default action
         action_executor = new ActionExecutor(random_wander);
 
     }
@@ -193,6 +207,7 @@ public class AI : MonoBehaviour
     void Update()
     {
         //******************************************************************************************************************//
+        //******************************************************************************************************************//
 
         // Setting the distance to infinity for
         // a default value
@@ -210,6 +225,7 @@ public class AI : MonoBehaviour
         list_power_pickups = agentScript.GetGameObjectsInViewOfTag(Constants.PowerUpTag);
         list_health_kits = agentScript.GetGameObjectsInViewOfTag(Constants.HealthKitTag);
 
+        //******************************************************************************************************************//
         //******************************************************************************************************************//
 
         for (int i = 0; i < list_enemies.Count; i++)
@@ -236,6 +252,7 @@ public class AI : MonoBehaviour
         }
 
         //******************************************************************************************************************//
+        //******************************************************************************************************************//
 
         closest_distance = Mathf.Infinity;
 
@@ -258,6 +275,7 @@ public class AI : MonoBehaviour
         }
 
         //******************************************************************************************************************//
+        //******************************************************************************************************************//
 
         closest_distance = Mathf.Infinity;
 
@@ -279,6 +297,7 @@ public class AI : MonoBehaviour
         }
 
         //******************************************************************************************************************//
+        //******************************************************************************************************************//
 
         // If we're alive, continue
         if (agentScript.Alive)
@@ -290,6 +309,7 @@ public class AI : MonoBehaviour
             action_executor.Execute(agentScript, enemy, power_pickup, health_kit);
         }
 
+        //******************************************************************************************************************//
         //******************************************************************************************************************//
 
 

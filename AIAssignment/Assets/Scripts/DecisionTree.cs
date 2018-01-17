@@ -263,6 +263,8 @@ public class SingleAction : IAction
             // Timer increases with delta time
             timer += Time.deltaTime;
 
+            Debug.Log(agent.name + " executing " + main_action.Method.Name);
+
             // If timer execeeds the delay in execution,
             // then execute the action
             if (timer >= delay)

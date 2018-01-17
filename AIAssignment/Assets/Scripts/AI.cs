@@ -23,8 +23,7 @@ using UnityEngine;
 *****************************************************************************************************************************/
 
 public class AI : MonoBehaviour
-{
-    
+{    
     private DecisionTree decision_tree;
     private ActionExecutor action_executor;
 

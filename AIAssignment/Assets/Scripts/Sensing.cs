@@ -35,12 +35,16 @@ public class Sensing : MonoBehaviour
             // Ensure we are not looking through a wall
 
             if (!Physics.Raycast(transform.position, other.gameObject.transform.position - transform.position, objectDistance, layerMask))
-
             {
                 // We can see it
                 //agentScript.AddToPercievedObjectsList(other.gameObject);
                 agentScript.AddToSeenObjects(other.gameObject);
 
+            }
+            else
+            {
+                // We cannot see it
+                agentScript.RemoveFromSeenObjects(other.gameObject);
             }
 
         }

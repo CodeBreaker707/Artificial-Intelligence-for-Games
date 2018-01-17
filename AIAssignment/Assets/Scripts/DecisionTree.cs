@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -374,7 +373,7 @@ abstract class Node
 // in the decision tree
 class DecisionNode : Node
 {
-    // If the decision is postive, we use this child
+    // If the decision is positive, we use this child
     Node true_child;
     // Otherwise,
     Node false_child;

@@ -30,7 +30,7 @@ class Decisions
     //******************************************************************************************************************//
 
     // A decision to check if the agents are
-    // close enough to each other
+    // close enough to each other to attack
     public static bool IsInAttackDistance(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
         return agent.IsInAttackRange(enemy);
@@ -117,7 +117,7 @@ class Decisions
     public static bool IsHealthHigherThan25Percent(AgentActions agent, GameObject enemy, GameObject powerPickup, GameObject healthKit)
     {
         // If the agent's health is greater than 25% of its maximum
-        //health, this function will return true
+        // health, this function will return true
         if (agent.CurrentHitPoints > 0.25 * agent.MaxHitPoints)
         {
             return true;
@@ -220,6 +220,7 @@ public delegate bool Action(AgentActions agent, GameObject enemy, GameObject pow
 // the details of the action
 public interface IAction
 {
+
     bool IsComplete { get; }
 
     // Function to execute the action
@@ -233,8 +234,10 @@ public interface IAction
 public class SingleAction : IAction
 {
     // Declaring the reference pointer
-    Action main_action;
+    Action m_action;
 
+    // A boolean to check if the
+    // action is completed
     private bool is_complete;
 
     // Stores the delayed time
@@ -247,11 +250,12 @@ public class SingleAction : IAction
 
     // Constructor to intialise default values
     // and which action to execute
-    public SingleAction(Action m_action, float time)
+    public SingleAction(Action action, float time)
     {
-        main_action = m_action;
+        m_action = action;
         delay = time;
         is_complete = true;
+        timer = 0.0f;
 
     }
 
@@ -263,14 +267,14 @@ public class SingleAction : IAction
             // Timer increases with delta time
             timer += Time.deltaTime;
 
-            Debug.Log(agent.name + " executing " + main_action.Method.Name);
+            Debug.Log(agent.name + " executing " + m_action.Method.Name);
 
             // If timer execeeds the delay in execution,
             // then execute the action
             if (timer >= delay)
             {
 
-                is_complete = main_action.Invoke(agent, enemy, powerPickup, healthKit);
+                is_complete = m_action.Invoke(agent, enemy, powerPickup, healthKit);
             }
 
         }
@@ -495,15 +499,18 @@ public class ActionExecutor
     }
 }
 
-// The class comprising the decision tree algorithm
+// The class containing the decision tree algorithm
 class DecisionTree
 {
     // A node from where the tree will begin
     // its traversal
     Node root_node;
 
+    // The current position of the tree
+    // traversal
     Node current_node;
 
+    // The concluding action
     IAction leaf_action;
 
     public DecisionTree(Node root)

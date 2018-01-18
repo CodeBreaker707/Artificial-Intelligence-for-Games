@@ -119,6 +119,25 @@ public class AgentActions : MonoBehaviour
 
     }
 
+    //public void AddToPercievedObjectsList(GameObject seenObject)
+    //{
+    //    //Debug.Log(this.name + " seen " + seenObject.name);
+    //    // We can see the object, add it to the list of game objects we know about, unless it's already in the list
+    //    if (!ObjectsPercieved.ContainsKey(seenObject.gameObject.name))
+    //    {
+    //        ObjectsPercieved.Add(seenObject.gameObject.name, seenObject.gameObject);
+    //    }
+    //}
+
+    //public void RemoveFromPercievedObjectList(GameObject unseenObject)
+    //{
+    //    // add it to the list of objects we can currently percieve
+    //    if (ObjectsPercieved.ContainsKey(unseenObject.gameObject.name))
+    //    {
+    //        ObjectsPercieved.Remove(unseenObject.gameObject.name);
+    //    }
+    //}
+
     // Move towards a target object
     public void MoveTo(GameObject target)
     {
@@ -280,6 +299,20 @@ public class AgentActions : MonoBehaviour
     //    }
     //}
 
+    // Get a percieved object, null if object is not in view
+    //public GameObject GetObjectInView(String name)
+    //{
+    //    // If we can percieve it retern it, otherwise return null
+    //    GameObject objectPercieved;
+    //    if (ObjectsPercieved.TryGetValue(name, out objectPercieved))
+    //    {
+    //        return objectPercieved;
+    //    }
+    //    else
+    //    {
+    //        return null;
+    //    }
+    //}
 
     public List<GameObject> GetGameObjectsInViewOfTag(String seen_tag)
     {

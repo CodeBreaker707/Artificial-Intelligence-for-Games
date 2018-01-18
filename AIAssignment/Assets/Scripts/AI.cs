@@ -10,6 +10,7 @@ using UnityEngine;
 * -  public bool Alive                                  // Check if we are still alive
 * -  public bool PowerUp                                // Check if we have used the power up
 * -  public int CurrentHitPoints                        // How many current hit points do we have
+* -  private bool Fleeing                               // Check if we are fleeing
 *
 * 'agentScript' methods    
 * -  public void MoveTo(GameObject target)               // Move towards a target object        
@@ -19,6 +20,7 @@ using UnityEngine;
 * -  public void Flee(GameObject enemy)                  // Run away
 * -  public bool IsObjectInView(String name)             // Check if something of interest is in range
 * -  public GameObject GetObjectInView(String name)      // Get a percieved object, null if object is not in view
+* -  public List<GameObject> GetGameObjectsInViewOfTag   // Get perceived game objects of a specific tag
 * 
 *****************************************************************************************************************************/
 
